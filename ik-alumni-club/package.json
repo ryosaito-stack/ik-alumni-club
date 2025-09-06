@@ -1,0 +1,44 @@
+{
+  "name": "ik-alumni-club",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 3001",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "emu": "firebase emulators:start --import ./emulator-data --export-on-exit ./emulator-data --project demo-project",
+    "emu:export": "firebase emulators:export ./emulator-data --project demo-project",
+    "emu:import": "firebase emulators:start --import ./emulator-data --project demo-project",
+    "seed": "ts-node scripts/seed.ts",
+    "seed:contents": "ts-node --project tsconfig.node.json scripts/seed-contents.ts",
+    "seed:informations": "ts-node --project tsconfig.node.json scripts/seed-informations.ts",
+    "seed:users": "ts-node --project tsconfig.node.json scripts/seed-users.ts",
+    "seed:users-api": "ts-node --project tsconfig.node.json scripts/seed-users-api.ts",
+    "seed:schedules": "ts-node --project tsconfig.node.json scripts/seed-schedules.ts",
+    "seed:videos": "ts-node --project tsconfig.node.json scripts/seed-videos.ts",
+    "seed:blogs": "ts-node --project tsconfig.node.json scripts/seed-blogs.ts",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "firebase": "^12.1.0",
+    "firebase-admin": "^13.4.0",
+    "next": "15.4.6",
+    "react": "19.1.0",
+    "react-dom": "19.1.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20.19.10",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "dotenv": "^17.2.1",
+    "eslint": "^9",
+    "eslint-config-next": "15.4.6",
+    "firebase-tools": "^14.12.0",
+    "tailwindcss": "^4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5"
+  }
+}

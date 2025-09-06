@@ -1,0 +1,24 @@
+絵文字テストファイル
+===================
+
+ナビゲーションアイコン:
+- Dashboard: 📊
+- Contents: 📚
+- Profile: 👤
+- Manage Contents: 📝
+- Manage Users: 👥
+
+その他の絵文字テスト:
+✅ チェックマーク
+🎉 お祝い
+🚀 ロケット
+💡 アイデア
+⚠️ 警告
+
+日本語テキスト:
+これは日本語のテストです。
+文字化けしていないことを確認してください。
+
+英語テキスト:
+This is an English test.
+No character encoding issues should appear.

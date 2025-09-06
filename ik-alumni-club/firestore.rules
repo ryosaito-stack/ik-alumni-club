@@ -1,0 +1,125 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 管理者かどうかを判定する関数
+    function isAdmin() {
+      return request.auth != null && 
+        exists(/databases/$(database)/documents/members/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/members/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // 会員情報
+    match /members/{uid} {
+      // 読み取り：本人または認証済みユーザー（開発環境用）
+      allow read: if request.auth != null;
+      
+      // 書き込み：本人のみ
+      allow write: if request.auth != null && request.auth.uid == uid;
+      
+      // リスト取得：認証済みユーザー（開発環境用、本番では管理者のみに制限）
+      allow list: if request.auth != null;
+    }
+    
+    // コンテンツ
+    match /contents/{id} {
+      // 読み取り：認証済みユーザー全員
+      allow read: if request.auth != null;
+      
+      // 書き込み：管理者のみ
+      allow write: if isAdmin();
+    }
+    
+    // インフォメーション（お知らせ）
+    match /informations/{id} {
+      // ユーザーの会員種別を取得する関数
+      function getUserMemberType() {
+        return request.auth != null && 
+          exists(/databases/$(database)/documents/members/$(request.auth.uid))
+          ? get(/databases/$(database)/documents/members/$(request.auth.uid)).data.plan
+          : null;
+      }
+      
+      // 公開済みかどうかを判定
+      function isPublished() {
+        return resource.data.published == true;
+      }
+      
+      // 対象会員かどうかを判定
+      function isTargetMember() {
+        // ALLが含まれている場合は全員アクセス可能
+        return 'ALL' in resource.data.targetMembers ||
+          // ログインしていない場合はALLのみ
+          (request.auth == null && 'ALL' in resource.data.targetMembers) ||
+          // ログインしている場合は会員種別をチェック
+          (request.auth != null && (
+            getUserMemberType() in resource.data.targetMembers ||
+            // BUSINESS会員はINDIVIDUALコンテンツも見れる
+            (getUserMemberType() == 'BUSINESS' && 'INDIVIDUAL' in resource.data.targetMembers) ||
+            // PLATINUM会員は全てのコンテンツを見れる
+            (getUserMemberType() == 'PLATINUM' && ('INDIVIDUAL' in resource.data.targetMembers || 'BUSINESS' in resource.data.targetMembers))
+          ));
+      }
+      
+      // 読み取り：公開済みかつ対象会員のみ
+      allow read: if isPublished() && isTargetMember();
+      
+      // リスト取得：公開済みのもののみ（クライアント側でさらにフィルタリング）
+      allow list: if true;  // クライアント側でpublished=trueとtargetMembersをフィルタリング
+      
+      // 書き込み（作成・更新・削除）：管理者のみ
+      allow write: if isAdmin();
+    }
+    
+    // スケジュール（イベント）
+    match /schedules/{id} {
+      // 公開済みかどうかを判定
+      function isPublished() {
+        return resource.data.published == true;
+      }
+      
+      // 読み取り：公開済みのみ（全員アクセス可能）
+      allow read: if isPublished();
+      
+      // リスト取得：全て（クライアント側でpublished=trueをフィルタリング）
+      allow list: if true;
+      
+      // 書き込み（作成・更新・削除）：管理者のみ
+      allow write: if isAdmin();
+    }
+
+    // 動画コンテンツ
+    match /videos/{id} {
+      // 公開済みかどうかを判定
+      function isPublished() {
+        return resource.data.published == true;
+      }
+      
+      // 読み取り：公開済みのみ（全員アクセス可能）
+      allow read: if isPublished();
+      
+      // リスト取得：全て（クライアント側でpublished=trueをフィルタリング）
+      allow list: if true;
+      
+      // 書き込み（作成・更新・削除）：管理者のみ
+      allow write: if isAdmin();
+    }
+    
+    // ブログ記事
+    match /blogs/{id} {
+      // 公開済みかどうかを判定
+      function isPublished() {
+        return resource.data.published == true;
+      }
+      
+      // 読み取り：公開済みのみ（全員アクセス可能）
+      allow read: if isPublished();
+      
+      // リスト取得：全て（クライアント側でpublished=trueをフィルタリング）
+      allow list: if true;
+      
+      // 書き込み（作成・更新・削除）：管理者のみ
+      allow write: if isAdmin();
+    }
+  }
+}

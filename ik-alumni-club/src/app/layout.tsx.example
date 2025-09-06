@@ -1,0 +1,56 @@
+import type { Metadata } from "next";
+import localFont from 'next/font/local';
+import "./globals.css";
+
+// カスタムフォントの設定例
+// フォントファイル名を実際のファイル名に変更してください
+const customFont = localFont({
+  src: [
+    {
+      path: '../../public/fonts/YourFont-Regular.woff2',
+      weight: '400',
+      style: 'normal',
+    },
+    {
+      path: '../../public/fonts/YourFont-Medium.woff2',
+      weight: '500',
+      style: 'normal',
+    },
+    {
+      path: '../../public/fonts/YourFont-Bold.woff2',
+      weight: '700',
+      style: 'normal',
+    },
+  ],
+  variable: '--font-custom',
+  display: 'swap', // フォント読み込み中の表示方法
+});
+
+// 日本語フォントの場合の設定例
+const japaneseFont = localFont({
+  src: '../../public/fonts/YourJapaneseFont.woff2',
+  weight: '100 900', // 可変フォントの場合
+  variable: '--font-japanese',
+  display: 'swap',
+});
+
+export const metadata: Metadata = {
+  title: "IK Alumni Club",
+  description: "IK Alumni CGT サポーターズクラブ会員サイト",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="ja">
+      <body
+        className={`${customFont.variable} ${japaneseFont.variable} antialiased`}
+      >
+        {children}
+      </body>
+    </html>
+  );
+}
