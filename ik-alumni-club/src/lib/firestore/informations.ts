@@ -20,6 +20,7 @@ import {
   InformationFormData,
   InformationQueryOptions,
 } from '@/types/information';
+import { timestampToDate } from '@/lib/firestore/utils';
 
 const COLLECTION_NAME = 'informations';
 
@@ -27,14 +28,14 @@ const COLLECTION_NAME = 'informations';
 const convertToInformation = (id: string, data: DocumentData): Information => {
   return {
     id,
-    date: data.date?.toDate() || new Date(),
+    date: timestampToDate(data.date),
     title: data.title || '',
     content: data.content || '',
     imageUrl: data.imageUrl,
     url: data.url,
     published: data.published || false,
-    createdAt: data.createdAt?.toDate() || new Date(),
-    updatedAt: data.updatedAt?.toDate() || new Date(),
+    createdAt: timestampToDate(data.createdAt),
+    updatedAt: timestampToDate(data.updatedAt),
   };
 };
 
