@@ -19,7 +19,7 @@ import {
   Information,
   InformationFormData,
   InformationQueryOptions,
-} from '@/types';
+} from '@/types/information';
 
 const COLLECTION_NAME = 'informations';
 
