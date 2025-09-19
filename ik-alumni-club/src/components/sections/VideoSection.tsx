@@ -3,15 +3,15 @@
 import { useState, useEffect } from 'react';
 import Section from '@/components/Section';
 import { useScrollAnimation } from '@/hooks/useScrollAnimation';
-import { useCarouselVideos } from '@/hooks/useVideos';
+import { useLatestVideos } from '@/hooks/useVideos';
 
 
 export default function VideoSection() {
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const { ref: videoRef, isVisible: videoVisible } = useScrollAnimation({ threshold: 0.2 });
   
-  // Firestoreからカルーセル用動画を取得
-  const { videos, loading } = useCarouselVideos(5);
+  // Firestoreから最新の動画を取得
+  const { videos, loading } = useLatestVideos(5);
 
   // ビデオカルーセルの自動再生
   useEffect(() => {

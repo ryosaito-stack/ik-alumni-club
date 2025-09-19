@@ -1,76 +1,181 @@
 import { useState, useEffect } from 'react';
-import { Content, BlogCategory } from '@/types';
-import { getBlogArticles, getContentById } from '@/lib/firestore';
+import { useAuth } from './useAuth';
+import {
+  getBlog,
+  getBlogs,
+  getPublishedBlogs,
+  getLatestBlogs,
+  createBlog,
+  updateBlog,
+  deleteBlog,
+} from '@/lib/firestore/blogs';
+import { Blog, BlogFormData, BlogQueryOptions } from '@/types';
 
-// ブログ記事一覧を取得するフック
-export function useBlogArticles(limit?: number) {
-  const [articles, setArticles] = useState<Content[]>([]);
+// 単一のBlog記事を取得するフック
+export const useBlog = (id: string) => {
+  const [blog, setBlog] = useState<Blog | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    const fetchArticles = async () => {
+    const fetchBlog = async () => {
       try {
         setLoading(true);
-        const data = await getBlogArticles(limit);
-        setArticles(data);
+        const data = await getBlog(id);
+        setBlog(data);
       } catch (err) {
-        setError(err as Error);
-        console.error('Error fetching blog articles:', err);
+        setError(err instanceof Error ? err : new Error('Failed to fetch blog'));
       } finally {
         setLoading(false);
       }
     };
 
-    fetchArticles();
-  }, [limit]);
-
-  return { articles, loading, error };
-}
-
-// 特定のブログ記事を取得するフック
-export function useBlogArticle(id: string) {
-  const [article, setArticle] = useState<Content | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-
-  useEffect(() => {
-    if (!id) {
-      setLoading(false);
-      return;
+    if (id) {
+      fetchBlog();
     }
-
-    const fetchArticle = async () => {
-      try {
-        setLoading(true);
-        const data = await getContentById(id);
-        // articleタイプのみ取得
-        if (data && data.type === 'article') {
-          setArticle(data);
-        } else {
-          setArticle(null);
-        }
-      } catch (err) {
-        setError(err as Error);
-        console.error('Error fetching blog article:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchArticle();
   }, [id]);
 
-  return { article, loading, error };
-}
+  return { blog, loading, error };
+};
 
-// カテゴリ別にフィルタリングされたブログ記事を取得するフック
-export function useBlogArticlesByCategory(category?: BlogCategory | 'all') {
-  const { articles, loading, error } = useBlogArticles();
-  
-  const filteredArticles = category && category !== 'all' 
-    ? articles.filter(article => article.category === category)
-    : articles;
-    
-  return { articles: filteredArticles, loading, error };
-}
+// Blogのリストを取得するフック
+export const useBlogs = (options: BlogQueryOptions = {}) => {
+  const [blogs, setBlogs] = useState<Blog[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    const fetchBlogs = async () => {
+      try {
+        setLoading(true);
+        const data = await getBlogs(options);
+        setBlogs(data);
+      } catch (err) {
+        setError(err instanceof Error ? err : new Error('Failed to fetch blogs'));
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBlogs();
+  }, [JSON.stringify(options)]);
+
+  return { blogs, loading, error };
+};
+
+// 公開済みBlogを取得するフック
+export const usePublishedBlogs = (options: BlogQueryOptions = {}) => {
+  const [blogs, setBlogs] = useState<Blog[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    const fetchBlogs = async () => {
+      try {
+        setLoading(true);
+        const data = await getPublishedBlogs(options);
+        setBlogs(data);
+      } catch (err) {
+        setError(err instanceof Error ? err : new Error('Failed to fetch blogs'));
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBlogs();
+  }, [JSON.stringify(options)]);
+
+  return { blogs, loading, error };
+};
+
+// 最新のBlog記事を取得するフック
+export const useLatestBlogs = (limit: number = 3) => {
+  const [blogs, setBlogs] = useState<Blog[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    const fetchBlogs = async () => {
+      try {
+        setLoading(true);
+        const data = await getLatestBlogs(limit);
+        setBlogs(data);
+      } catch (err) {
+        setError(err instanceof Error ? err : new Error('Failed to fetch latest blogs'));
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBlogs();
+  }, [limit]);
+
+  return { blogs, loading, error };
+};
+
+// Blog CRUD操作用フック
+export const useBlogMutations = () => {
+  const { user, member } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  const createBlogHandler = async (data: BlogFormData): Promise<string | null> => {
+    if (!user || !member) {
+      setError(new Error('User not authenticated'));
+      return null;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+      const author = {
+        id: user.uid,
+        name: `${member.lastName} ${member.firstName}` || 'Unknown',
+        role: member.role || 'member',
+      };
+      const id = await createBlog(data, author);
+      return id;
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error('Failed to create blog'));
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateBlogHandler = async (id: string, data: BlogFormData): Promise<boolean> => {
+    try {
+      setLoading(true);
+      setError(null);
+      await updateBlog(id, data);
+      return true;
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error('Failed to update blog'));
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteBlogHandler = async (id: string): Promise<boolean> => {
+    try {
+      setLoading(true);
+      setError(null);
+      await deleteBlog(id);
+      return true;
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error('Failed to delete blog'));
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return {
+    createBlog: createBlogHandler,
+    updateBlog: updateBlogHandler,
+    deleteBlog: deleteBlogHandler,
+    loading,
+    error,
+  };
+};

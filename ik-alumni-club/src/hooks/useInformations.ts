@@ -6,14 +6,13 @@ import {
   Information,
   InformationFormData,
   InformationQueryOptions,
-  InformationAuthor,
 } from '@/types';
 import {
   createInformation as createInformationFirestore,
   getInformation as getInformationFirestore,
   updateInformation as updateInformationFirestore,
   deleteInformation as deleteInformationFirestore,
-  getAvailableInformations as getAvailableInformationsFirestore,
+  getInformations as getInformationsFirestore,
 } from '@/lib/firestore/informations';
 
 // お知らせ一覧を取得するフック（リアルタイム更新対応）
@@ -29,29 +28,17 @@ export const useInformations = (options: InformationQueryOptions = {}) => {
     // Firestoreクエリの構築
     const constraints = [];
     
-    // published フィルター
-    if (options.published !== undefined) {
-      constraints.push(where('published', '==', options.published));
-    }
-
-    // category フィルター
-    if (options.category) {
-      constraints.push(where('category', '==', options.category));
-    }
-
-    // isPinned フィルター
-    if (options.isPinned !== undefined) {
-      constraints.push(where('isPinned', '==', options.isPinned));
-    }
-
-    // ソート
+    // ソート（単一フィールドのみ使用してインデックス不要に）
     const orderField = options.orderBy || 'date';
     const orderDirection = options.orderDirection || 'desc';
     constraints.push(orderBy(orderField, orderDirection));
 
-    // リミット
-    if (options.limit) {
+    // リミット（多めに取得してクライアント側でフィルタリング）
+    if (options.limit && !options.published) {
       constraints.push(firestoreLimit(options.limit));
+    } else if (options.limit) {
+      // publishedフィルターがある場合は多めに取得
+      constraints.push(firestoreLimit(options.limit * 3));
     }
 
     const q = query(collection(db, 'informations'), ...constraints);
@@ -63,43 +50,28 @@ export const useInformations = (options: InformationQueryOptions = {}) => {
         const informationsList: Information[] = [];
         snapshot.forEach((doc) => {
           const data = doc.data();
-          informationsList.push({
-            id: doc.id,
-            title: data.title || '',
-            date: data.date?.toDate() || new Date(),
-            category: data.category || 'お知らせ',
-            content: data.content || '',
-            summary: data.summary || '',
-            targetMembers: data.targetMembers || ['ALL'],
-            isPinned: data.isPinned || false,
-            published: data.published || false,
-            author: data.author || { id: '', name: '', role: '' },
-            createdAt: data.createdAt?.toDate() || new Date(),
-            updatedAt: data.updatedAt?.toDate() || new Date(),
-          });
-        });
-
-        // targetMembers によるフィルタリング（クライアント側）
-        if (options.targetMembers && options.targetMembers.length > 0) {
-          const filteredList = informationsList.filter((info) => {
-            return options.targetMembers?.some((target) => 
-              info.targetMembers.includes(target)
-            );
-          });
-          setInformations(filteredList);
-        } else {
-          // isPinned の場合は、ピン留めされたものを上に
-          if (options.isPinned === undefined) {
-            informationsList.sort((a, b) => {
-              if (a.isPinned && !b.isPinned) return -1;
-              if (!a.isPinned && b.isPinned) return 1;
-              // 同じピン留め状態の場合は日付でソート
-              return b.date.getTime() - a.date.getTime();
+          // publishedフィルターをクライアント側で適用
+          if (options.published === undefined || data.published === options.published) {
+            informationsList.push({
+              id: doc.id,
+              title: data.title || '',
+              date: data.date?.toDate() || new Date(),
+              content: data.content || '',
+              imageUrl: data.imageUrl,
+              url: data.url,
+              published: data.published || false,
+              createdAt: data.createdAt?.toDate() || new Date(),
+              updatedAt: data.updatedAt?.toDate() || new Date(),
             });
           }
-          setInformations(informationsList);
-        }
-        
+        });
+
+        // limitをクライアント側で適用
+        const limitedList = options.limit && options.published !== undefined
+          ? informationsList.slice(0, options.limit)
+          : informationsList;
+
+        setInformations(limitedList);
         setLoading(false);
       },
       (err) => {
@@ -112,10 +84,7 @@ export const useInformations = (options: InformationQueryOptions = {}) => {
     // クリーンアップ
     return () => unsubscribe();
   }, [
-    options.category,
-    options.targetMembers?.join(','),
     options.published,
-    options.isPinned,
     options.limit,
     options.orderBy,
     options.orderDirection,
@@ -124,42 +93,13 @@ export const useInformations = (options: InformationQueryOptions = {}) => {
   return { informations, loading, error };
 };
 
-// ユーザーが閲覧可能なお知らせを取得するフック
+// ユーザーが閲覧可能なお知らせを取得するフック（公開されたもののみ）
 export const useAvailableInformations = (options: InformationQueryOptions = {}) => {
-  const [informations, setInformations] = useState<Information[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-  const { member } = useAuth();
-
-  useEffect(() => {
-    const fetchInformations = async () => {
-      setLoading(true);
-      setError(null);
-      
-      try {
-        // メンバーのプランを取得
-        const userPlan = member?.plan?.toUpperCase() as 'PLATINUM' | 'BUSINESS' | 'INDIVIDUAL' | undefined;
-        
-        const result = await getAvailableInformationsFirestore(userPlan, options);
-        setInformations(result);
-      } catch (err) {
-        console.error('Error fetching available informations:', err);
-        setError(err as Error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchInformations();
-  }, [
-    member?.plan,
-    options.category,
-    options.limit,
-    options.orderBy,
-    options.orderDirection,
-  ]);
-
-  return { informations, loading, error };
+  // useInformationsフックを再利用して、publishedをtrueに強制
+  return useInformations({
+    ...options,
+    published: true,
+  });
 };
 
 // 単一のお知らせを取得するフック
@@ -195,18 +135,15 @@ export const useInformation = (id: string) => {
   return { information, loading, error };
 };
 
-// お知らせのCRUD操作を提供するフック
+// お知らせのCRUD操作用フック
 export const useInformationMutations = () => {
-  const { user, member } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const { member } = useAuth();
 
-  // 作成
-  const createInformation = useCallback(async (
-    formData: InformationFormData
-  ): Promise<string | null> => {
-    if (!user || !member) {
-      setError(new Error('認証が必要です'));
+  const createInformation = useCallback(async (formData: InformationFormData): Promise<string | null> => {
+    if (!member) {
+      setError(new Error('ログインが必要です'));
       return null;
     }
 
@@ -214,30 +151,20 @@ export const useInformationMutations = () => {
     setError(null);
 
     try {
-      const author: InformationAuthor = {
-        id: user.uid,
-        name: member.displayName || user.email || '管理者',
-        role: member.role || 'member',
-      };
-
-      const id = await createInformationFirestore(formData, author);
+      const id = await createInformationFirestore(formData);
+      setLoading(false);
       return id;
     } catch (err) {
       console.error('Error creating information:', err);
       setError(err as Error);
-      return null;
-    } finally {
       setLoading(false);
+      return null;
     }
-  }, [user, member]);
+  }, [member]);
 
-  // 更新
-  const updateInformation = useCallback(async (
-    id: string,
-    formData: InformationFormData
-  ): Promise<boolean> => {
-    if (!user || !member) {
-      setError(new Error('認証が必要です'));
+  const updateInformation = useCallback(async (id: string, formData: InformationFormData): Promise<boolean> => {
+    if (!member) {
+      setError(new Error('ログインが必要です'));
       return false;
     }
 
@@ -245,27 +172,20 @@ export const useInformationMutations = () => {
     setError(null);
 
     try {
-      const author: InformationAuthor = {
-        id: user.uid,
-        name: member.displayName || user.email || '管理者',
-        role: member.role || 'member',
-      };
-
-      await updateInformationFirestore(id, formData, author);
+      await updateInformationFirestore(id, formData);
+      setLoading(false);
       return true;
     } catch (err) {
       console.error('Error updating information:', err);
       setError(err as Error);
-      return false;
-    } finally {
       setLoading(false);
+      return false;
     }
-  }, [user, member]);
+  }, [member]);
 
-  // 削除
   const deleteInformation = useCallback(async (id: string): Promise<boolean> => {
-    if (!user || !member) {
-      setError(new Error('認証が必要です'));
+    if (!member) {
+      setError(new Error('ログインが必要です'));
       return false;
     }
 
@@ -274,15 +194,15 @@ export const useInformationMutations = () => {
 
     try {
       await deleteInformationFirestore(id);
+      setLoading(false);
       return true;
     } catch (err) {
       console.error('Error deleting information:', err);
       setError(err as Error);
-      return false;
-    } finally {
       setLoading(false);
+      return false;
     }
-  }, [user, member]);
+  }, [member]);
 
   return {
     createInformation,

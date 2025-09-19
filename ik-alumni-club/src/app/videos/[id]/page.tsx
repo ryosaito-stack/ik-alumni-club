@@ -125,8 +125,11 @@ export default function VideoDetailPage() {
   return (
     <DetailLayout
       title={video.title}
-      date=""
-      hideDate={true}
+      date={new Date(video.date).toLocaleDateString('ja-JP', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      })}
       showShareButtons={true}
       backLink="/videos"
       backText="BACK"

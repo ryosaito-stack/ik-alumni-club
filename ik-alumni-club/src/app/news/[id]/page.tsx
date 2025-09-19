@@ -60,7 +60,37 @@ export default function NewsDetailPage() {
       backLink="/news"
       backText="BACK"
     >
+      {/* 画像がある場合は表示 */}
+      {information.imageUrl && (
+        <div className="mb-8">
+          <img
+            src={information.imageUrl}
+            alt={information.title}
+            className="w-full rounded-lg shadow-md"
+            style={{ maxHeight: '500px', objectFit: 'cover' }}
+          />
+        </div>
+      )}
+      
+      {/* コンテンツ */}
       <div dangerouslySetInnerHTML={{ __html: information.content }} />
+      
+      {/* 外部リンクがある場合は表示 */}
+      {information.url && (
+        <div className="mt-8 pt-8 border-t border-gray-200">
+          <a
+            href={information.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center text-indigo-600 hover:text-indigo-700 font-medium"
+          >
+            <span>詳細はこちら</span>
+            <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+          </a>
+        </div>
+      )}
     </DetailLayout>
   );
 }

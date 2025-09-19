@@ -5,29 +5,19 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useVideos, useVideoMutations } from '@/hooks/useVideos';
-import { VideoCategory } from '@/types';
-
-// カテゴリーのラベル
-const categoryLabels: Record<VideoCategory, string> = {
-  CONFERENCE: 'カンファレンス',
-  SEMINAR: 'セミナー',
-  WORKSHOP: 'ワークショップ',
-  INTERVIEW: 'インタビュー',
-  EVENT: 'イベント',
-  FEATURE: '特集',
-};
 
 export default function AdminVideosPage() {
   const router = useRouter();
   const { member } = useAuth();
-  const [selectedCategory, setSelectedCategory] = useState<VideoCategory | 'all'>('all');
+  const [showUnpublished, setShowUnpublished] = useState(true);
 
   // 管理者チェック
   const isAdmin = member?.role === 'admin';
 
-  // 動画一覧を取得（公開・非公開すべて）
+  // 動画一覧を取得
   const { videos, loading } = useVideos({
-    orderBy: 'createdAt',
+    published: showUnpublished ? undefined : true,
+    orderBy: 'date',
     orderDirection: 'desc',
   });
 
@@ -39,11 +29,6 @@ export default function AdminVideosPage() {
       router.push('/dashboard');
     }
   }, [member, isAdmin, router]);
-
-  // カテゴリーでフィルタリング
-  const filteredVideos = selectedCategory === 'all' 
-    ? videos 
-    : videos.filter(video => video.category === selectedCategory);
 
   const handleDelete = async (id: string, title: string) => {
     if (confirm(`「${title}」を削除してもよろしいですか？`)) {
@@ -76,49 +61,30 @@ export default function AdminVideosPage() {
         </div>
       </div>
 
-      {/* カテゴリーフィルター */}
+      {/* フィルター */}
       <div className="mb-6">
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => setSelectedCategory('all')}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-              selectedCategory === 'all'
-                ? 'bg-indigo-600 text-white'
-                : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-300'
-            }`}
-          >
-            すべて ({videos.length})
-          </button>
-          {(Object.keys(categoryLabels) as VideoCategory[]).map(category => {
-            const count = videos.filter(v => v.category === category).length;
-            return (
-              <button
-                key={category}
-                onClick={() => setSelectedCategory(category)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                  selectedCategory === category
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-300'
-                }`}
-              >
-                {categoryLabels[category]} ({count})
-              </button>
-            );
-          })}
-        </div>
+        <label className="flex items-center">
+          <input
+            type="checkbox"
+            checked={showUnpublished}
+            onChange={(e) => setShowUnpublished(e.target.checked)}
+            className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+          />
+          <span className="ml-2 text-sm text-gray-700">非公開も表示</span>
+        </label>
       </div>
 
       {/* 動画一覧テーブル */}
       {loading ? (
         <div className="text-center py-8">読み込み中...</div>
-      ) : filteredVideos.length === 0 ? (
+      ) : videos.length === 0 ? (
         <div className="text-center py-8 bg-white rounded-lg shadow">
           <p className="text-gray-500">動画がありません</p>
         </div>
       ) : (
         <div className="bg-white shadow overflow-hidden sm:rounded-md">
           <ul className="divide-y divide-gray-200">
-            {filteredVideos.map((video) => (
+            {videos.map((video) => (
               <li key={video.id}>
                 <div className="px-4 py-4 sm:px-6 hover:bg-gray-50">
                   <div className="flex items-center justify-between">
@@ -134,22 +100,11 @@ export default function AdminVideosPage() {
                         }`}>
                           {video.published ? '公開' : '下書き'}
                         </span>
-                        {video.featuredInCarousel && (
-                          <span className="ml-2 px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded">
-                            カルーセル表示
-                          </span>
-                        )}
-                        <span className="ml-2 px-2 py-1 text-xs bg-indigo-100 text-indigo-800 rounded">
-                          {categoryLabels[video.category]}
-                        </span>
                       </div>
-                      <p className="mt-1 text-sm text-gray-600 line-clamp-2">
-                        {video.description}
-                      </p>
                       <div className="mt-2 text-xs text-gray-500">
+                        日付: {new Date(video.date).toLocaleDateString('ja-JP')} | 
                         作成者: {video.author.name} | 
-                        作成日: {new Date(video.createdAt).toLocaleDateString('ja-JP')}
-                        {video.sortOrder !== undefined && ` | 表示順: ${video.sortOrder}`}
+                        更新日: {new Date(video.updatedAt).toLocaleDateString('ja-JP')}
                       </div>
                       {(video.videoUrl || video.thumbnail) && (
                         <div className="mt-2 text-xs text-gray-500">

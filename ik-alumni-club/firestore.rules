@@ -9,22 +9,39 @@ service cloud.firestore {
         get(/databases/$(database)/documents/members/$(request.auth.uid)).data.role == 'admin';
     }
     
+    // アクティブなユーザーかどうかを判定する関数
+    function isActiveUser() {
+      return request.auth != null && 
+        exists(/databases/$(database)/documents/members/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/members/$(request.auth.uid)).data.isActive == true;
+    }
+    
     // 会員情報
     match /members/{uid} {
-      // 読み取り：本人または認証済みユーザー（開発環境用）
-      allow read: if request.auth != null;
+      // 読み取り：本人または管理者
+      allow read: if request.auth != null && 
+        (request.auth.uid == uid || isAdmin());
       
-      // 書き込み：本人のみ
-      allow write: if request.auth != null && request.auth.uid == uid;
+      // 作成：本人のみ
+      allow create: if request.auth != null && request.auth.uid == uid;
       
-      // リスト取得：認証済みユーザー（開発環境用、本番では管理者のみに制限）
-      allow list: if request.auth != null;
+      // 更新：本人のみ（ただしrole、plan、isActiveの変更は管理者のみ）
+      allow update: if request.auth != null && 
+        ((request.auth.uid == uid && 
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'plan', 'isActive'])) ||
+        isAdmin());
+      
+      // 削除：管理者のみ
+      allow delete: if isAdmin();
+      
+      // リスト取得：管理者のみ
+      allow list: if isAdmin();
     }
     
     // コンテンツ
     match /contents/{id} {
-      // 読み取り：認証済みユーザー全員
-      allow read: if request.auth != null;
+      // 読み取り：アクティブなユーザーのみ
+      allow read: if isActiveUser();
       
       // 書き込み：管理者のみ
       allow write: if isAdmin();
@@ -32,40 +49,16 @@ service cloud.firestore {
     
     // インフォメーション（お知らせ）
     match /informations/{id} {
-      // ユーザーの会員種別を取得する関数
-      function getUserMemberType() {
-        return request.auth != null && 
-          exists(/databases/$(database)/documents/members/$(request.auth.uid))
-          ? get(/databases/$(database)/documents/members/$(request.auth.uid)).data.plan
-          : null;
-      }
-      
       // 公開済みかどうかを判定
       function isPublished() {
         return resource.data.published == true;
       }
       
-      // 対象会員かどうかを判定
-      function isTargetMember() {
-        // ALLが含まれている場合は全員アクセス可能
-        return 'ALL' in resource.data.targetMembers ||
-          // ログインしていない場合はALLのみ
-          (request.auth == null && 'ALL' in resource.data.targetMembers) ||
-          // ログインしている場合は会員種別をチェック
-          (request.auth != null && (
-            getUserMemberType() in resource.data.targetMembers ||
-            // BUSINESS会員はINDIVIDUALコンテンツも見れる
-            (getUserMemberType() == 'BUSINESS' && 'INDIVIDUAL' in resource.data.targetMembers) ||
-            // PLATINUM会員は全てのコンテンツを見れる
-            (getUserMemberType() == 'PLATINUM' && ('INDIVIDUAL' in resource.data.targetMembers || 'BUSINESS' in resource.data.targetMembers))
-          ));
-      }
+      // 読み取り：公開済みのみ（全ユーザーアクセス可能）
+      allow read: if isPublished();
       
-      // 読み取り：公開済みかつ対象会員のみ
-      allow read: if isPublished() && isTargetMember();
-      
-      // リスト取得：公開済みのもののみ（クライアント側でさらにフィルタリング）
-      allow list: if true;  // クライアント側でpublished=trueとtargetMembersをフィルタリング
+      // リスト取得：全て（クライアント側でpublished=trueをフィルタリング）
+      allow list: if true;
       
       // 書き込み（作成・更新・削除）：管理者のみ
       allow write: if isAdmin();

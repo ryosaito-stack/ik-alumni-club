@@ -3,12 +3,14 @@
 import Link from 'next/link';
 import ViewAllLayout from '@/components/ViewAllLayout';
 import ListPageContent from '@/components/ListPageContent';
-import { useBlogArticlesByCategory } from '@/hooks/useBlogs';
-
+import { usePublishedBlogs } from '@/hooks/useBlogs';
 
 export default function BlogPage() {
-  // Firestoreからブログ記事を取得（すべての記事）
-  const { articles, loading } = useBlogArticlesByCategory('all');
+  // Firestoreから公開済みブログ記事を取得
+  const { blogs, loading } = usePublishedBlogs({
+    orderBy: 'createdAt',
+    orderDirection: 'desc',
+  });
 
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString('ja-JP', {
@@ -22,19 +24,44 @@ export default function BlogPage() {
     <ViewAllLayout title="BLOG" bgColor="white" maxWidth="6xl">
       <ListPageContent
         loading={loading}
-        items={articles}
+        items={blogs}
         emptyMessage="該当する記事がありません"
         layout="list"
       >
-        {(article) => (
-          <Link href={`/blog/${article.id}`}>
+        {(blog) => (
+          <Link href={`/blog/${blog.id}`} key={blog.id}>
             <div className="block--txt transition-opacity duration-300 cursor-pointer hover:opacity-60" style={{ paddingTop: '15px', paddingBottom: '15px', paddingLeft: '0', paddingRight: '0' }}>
-              <p className="date text-black" style={{ fontSize: '13px', marginBottom: '10px' }}>
-                {formatDate(article.createdAt)}
-              </p>
-              <p className="tit text-gray-800" style={{ fontSize: '14px' }}>
-                {article.title}
-              </p>
+              <div className="flex items-start gap-4">
+                {/* サムネイル画像 */}
+                {blog.thumbnail && (
+                  <div className="flex-shrink-0">
+                    <img 
+                      src={blog.thumbnail} 
+                      alt={blog.title}
+                      className="w-24 h-24 object-cover rounded"
+                    />
+                  </div>
+                )}
+                
+                <div className="flex-1">
+                  {/* 日付と著者 */}
+                  <div className="flex items-center gap-3 text-xs text-gray-500 mb-2">
+                    <span>{formatDate(blog.createdAt)}</span>
+                    <span>•</span>
+                    <span>{blog.author.name}</span>
+                  </div>
+                  
+                  {/* タイトル */}
+                  <h3 className="text-base font-medium text-gray-900 mb-2">
+                    {blog.title}
+                  </h3>
+                  
+                  {/* 抜粋 */}
+                  <p className="text-sm text-gray-600 line-clamp-2">
+                    {blog.excerpt}
+                  </p>
+                </div>
+              </div>
             </div>
           </Link>
         )}

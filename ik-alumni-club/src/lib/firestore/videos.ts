@@ -8,13 +8,12 @@ import {
   getDocs, 
   query, 
   where, 
-  orderBy, 
-  limit as firestoreLimit,
+  orderBy,
   Timestamp,
   serverTimestamp
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Video, VideoFormData, VideoQueryOptions, VideoCategory } from '@/types';
+import { Video, VideoFormData, VideoQueryOptions } from '@/types';
 
 const COLLECTION_NAME = 'videos';
 
@@ -31,15 +30,12 @@ const convertToVideo = (doc: any): Video => {
   const data = doc.data();
   return {
     id: doc.id,
-    title: data.title,
-    description: data.description,
-    category: data.category as VideoCategory,
-    videoUrl: data.videoUrl,
-    thumbnail: data.thumbnail,
-    published: data.published,
-    featuredInCarousel: data.featuredInCarousel,
-    sortOrder: data.sortOrder,
-    author: data.author,
+    title: data.title || '',
+    date: convertTimestamp(data.date),
+    videoUrl: data.videoUrl || '',
+    thumbnail: data.thumbnail || '',
+    published: data.published || false,
+    author: data.author || { id: '', name: '', role: '' },
     createdAt: convertTimestamp(data.createdAt),
     updatedAt: convertTimestamp(data.updatedAt),
   };
@@ -67,30 +63,56 @@ export const getVideos = async (options: VideoQueryOptions = {}): Promise<Video[
   try {
     let q = query(collection(db, COLLECTION_NAME));
 
-    // フィルタリング
-    if (options.published !== undefined) {
-      q = query(q, where('published', '==', options.published));
+    // 日付範囲でフィルタリング（whereとorderByの組み合わせは避ける）
+    if (options.startDate) {
+      q = query(q, where('date', '>=', Timestamp.fromDate(options.startDate)));
     }
-    if (options.category) {
-      q = query(q, where('category', '==', options.category));
-    }
-    if (options.featuredInCarousel !== undefined) {
-      q = query(q, where('featuredInCarousel', '==', options.featuredInCarousel));
+    if (options.endDate) {
+      q = query(q, where('date', '<=', Timestamp.fromDate(options.endDate)));
     }
 
-    // ソート
-    if (options.orderBy) {
+    // whereクエリがない場合のみorderByを追加
+    if (!options.startDate && !options.endDate) {
+      const orderField = options.orderBy || 'date';
       const direction = options.orderDirection || 'desc';
-      q = query(q, orderBy(options.orderBy, direction));
-    }
-
-    // 制限
-    if (options.limit) {
-      q = query(q, firestoreLimit(options.limit));
+      q = query(q, orderBy(orderField, direction));
     }
 
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(convertToVideo);
+    
+    // クライアント側でフィルタリングとソート
+    let videos = querySnapshot.docs.map(convertToVideo);
+    
+    // 公開状態でフィルタリング
+    if (options.published !== undefined) {
+      videos = videos.filter(video => video.published === options.published);
+    }
+    
+    // クライアント側でソート
+    if (options.startDate || options.endDate || options.orderBy) {
+      const orderField = options.orderBy || 'date';
+      const orderDirection = options.orderDirection || 'desc';
+      
+      videos.sort((a, b) => {
+        if (orderField === 'date') {
+          const aTime = a.date.getTime();
+          const bTime = b.date.getTime();
+          return orderDirection === 'asc' ? aTime - bTime : bTime - aTime;
+        } else if (orderField === 'createdAt' || orderField === 'updatedAt') {
+          const aTime = a[orderField].getTime();
+          const bTime = b[orderField].getTime();
+          return orderDirection === 'asc' ? aTime - bTime : bTime - aTime;
+        }
+        return 0;
+      });
+    }
+    
+    // 制限
+    if (options.limit && videos.length > options.limit) {
+      videos = videos.slice(0, options.limit);
+    }
+
+    return videos;
   } catch (error) {
     console.error('Error getting videos:', error);
     throw error;
@@ -105,23 +127,25 @@ export const getPublishedVideos = async (options: VideoQueryOptions = {}): Promi
   });
 };
 
-// カルーセル用の動画を取得（featuredInCarousel=trueかつ公開済み）
-export const getCarouselVideos = async (limit: number = 5): Promise<Video[]> => {
+// 最新の動画を取得（公開済み）
+export const getLatestVideos = async (limit: number = 5): Promise<Video[]> => {
   return getPublishedVideos({
-    featuredInCarousel: true,
-    orderBy: 'sortOrder',
-    orderDirection: 'asc',
+    orderBy: 'date',
+    orderDirection: 'desc',
     limit,
   });
 };
 
-// カテゴリー別の公開動画を取得
-export const getVideosByCategory = async (category: VideoCategory, limit?: number): Promise<Video[]> => {
+// 指定月の動画を取得
+export const getMonthVideos = async (year: number, month: number): Promise<Video[]> => {
+  const startOfMonth = new Date(year, month - 1, 1);
+  const endOfMonth = new Date(year, month, 0, 23, 59, 59);
+
   return getPublishedVideos({
-    category,
-    orderBy: 'createdAt',
+    startDate: startOfMonth,
+    endDate: endOfMonth,
+    orderBy: 'date',
     orderDirection: 'desc',
-    limit,
   });
 };
 
@@ -133,6 +157,7 @@ export const createVideo = async (
   try {
     const docData = {
       ...data,
+      date: Timestamp.fromDate(data.date),
       author,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
@@ -155,6 +180,7 @@ export const updateVideo = async (
     const docRef = doc(db, COLLECTION_NAME, id);
     const updateData = {
       ...data,
+      date: Timestamp.fromDate(data.date),
       updatedAt: serverTimestamp(),
     };
 

@@ -19,86 +19,84 @@ const testUsers = [
   {
     email: 'admin@example.com',
     password: 'password123',
-    displayName: '管理者太郎',
-    plan: 'platinum',
+    lastName: '管理者',
+    firstName: '太郎',
+    lastNameKana: 'カンリシャ',
+    firstNameKana: 'タロウ',
+    postalCode: '100-0001',
+    prefecture: '東京都',
+    city: '千代田区',
+    address: '千代田1-1-1',
+    building: '管理ビル5F',
+    phoneNumber: '03-0000-0001',
+    plan: 'platinum_business',
     role: 'admin',
-    bio: 'システム管理者です。全機能にアクセス可能です。',
-    company: 'IK Alumni Club運営',
-    position: 'システム管理者',
-    graduationYear: '2015',
-    major: 'コンピュータサイエンス',
+    isActive: true, // 管理者はアクティブ
   },
   {
-    email: 'platinum@example.com',
+    email: 'platinum-individual@example.com',
     password: 'password123',
-    displayName: 'プラチナ花子',
-    plan: 'platinum',
+    lastName: 'プラチナ',
+    firstName: '花子',
+    lastNameKana: 'プラチナ',
+    firstNameKana: 'ハナコ',
+    postalCode: '106-0032',
+    prefecture: '東京都',
+    city: '港区',
+    address: '六本木7-1-1',
+    phoneNumber: '03-0000-0002',
+    plan: 'platinum_individual',
     role: 'member',
-    bio: 'プラチナ会員として活動しています。最高レベルのコンテンツにアクセス可能です。',
-    company: '株式会社プレミアム',
-    position: 'CEO',
-    graduationYear: '2010',
-    major: '経営学',
+    isActive: true, // テスト用にアクティブ
+  },
+  {
+    email: 'platinum-business@example.com',
+    password: 'password123',
+    lastName: 'プラチナ',
+    firstName: '法人',
+    lastNameKana: 'プラチナ',
+    firstNameKana: 'ホウジン',
+    postalCode: '150-0002',
+    prefecture: '東京都',
+    city: '渋谷区',
+    address: '渋谷2-15-1',
+    building: 'クロスタワー21F',
+    phoneNumber: '03-0000-0003',
+    plan: 'platinum_business',
+    role: 'member',
+    isActive: true, // テスト用にアクティブ
   },
   {
     email: 'business@example.com',
     password: 'password123',
-    displayName: 'ビジネス次郎',
+    lastName: 'ビジネス',
+    firstName: '次郎',
+    lastNameKana: 'ビジネス',
+    firstNameKana: 'ジロウ',
+    postalCode: '541-0041',
+    prefecture: '大阪府',
+    city: '大阪市中央区',
+    address: '北浜1-1-1',
+    phoneNumber: '06-0000-0001',
     plan: 'business',
     role: 'member',
-    bio: 'ビジネス会員です。ビジネス向けコンテンツを活用しています。',
-    company: '合同会社ビジネス',
-    position: 'マネージャー',
-    graduationYear: '2018',
-    major: 'ビジネス管理',
+    isActive: true, // テスト用にアクティブ
   },
   {
     email: 'individual@example.com',
     password: 'password123',
-    displayName: '個人三郎',
+    lastName: '個人',
+    firstName: '三郎',
+    lastNameKana: 'コジン',
+    firstNameKana: 'サブロウ',
+    postalCode: '460-0008',
+    prefecture: '愛知県',
+    city: '名古屋市中区',
+    address: '栄3-1-1',
+    phoneNumber: '052-0000-0001',
     plan: 'individual',
     role: 'member',
-    bio: '個人会員として参加しています。基本的なコンテンツにアクセスできます。',
-    company: 'フリーランス',
-    position: 'エンジニア',
-    graduationYear: '2020',
-    major: '情報工学',
-  },
-  {
-    email: 'test1@example.com',
-    password: 'password123',
-    displayName: 'テスト一郎',
-    plan: 'individual',
-    role: 'member',
-    bio: 'テストユーザー1です。',
-    company: 'テスト株式会社',
-    position: '一般社員',
-    graduationYear: '2021',
-    major: '文学',
-  },
-  {
-    email: 'test2@example.com',
-    password: 'password123',
-    displayName: 'テスト二郎',
-    plan: 'business',
-    role: 'member',
-    bio: 'テストユーザー2です。',
-    company: 'サンプル会社',
-    position: 'リーダー',
-    graduationYear: '2019',
-    major: '法学',
-  },
-  {
-    email: 'test3@example.com',
-    password: 'password123',
-    displayName: 'テスト三子',
-    plan: 'platinum',
-    role: 'member',
-    bio: 'テストユーザー3です。女性のプラチナ会員です。',
-    company: 'エリート企業',
-    position: 'ディレクター',
-    graduationYear: '2012',
-    major: '医学',
+    isActive: false, // 未承認状態のテスト用
   },
 ];
 
@@ -118,7 +116,7 @@ async function seedUsers() {
         userRecord = await auth.createUser({
           email: userData.email,
           password: userData.password,
-          displayName: userData.displayName,
+          displayName: `${userData.lastName} ${userData.firstName}`,
         });
         console.log(`✅ ユーザー作成: ${userData.email}`);
       }
@@ -127,20 +125,36 @@ async function seedUsers() {
       const memberData = {
         uid: userRecord.uid,
         email: userData.email,
-        displayName: userData.displayName,
+        
+        // 名前情報
+        lastName: userData.lastName,
+        firstName: userData.firstName,
+        lastNameKana: userData.lastNameKana,
+        firstNameKana: userData.firstNameKana,
+        
+        // 住所情報
+        postalCode: userData.postalCode,
+        prefecture: userData.prefecture,
+        city: userData.city,
+        address: userData.address,
+        building: userData.building,
+        
+        // 連絡先
+        phoneNumber: userData.phoneNumber,
+        
+        // 会員情報
         plan: userData.plan,
-        role: userData.role,
-        bio: userData.bio,
-        company: userData.company,
-        position: userData.position,
-        graduationYear: userData.graduationYear,
-        major: userData.major,
+        role: userData.role || 'member',
+        isActive: userData.isActive !== undefined ? userData.isActive : false,
+        
+        // システム情報
         createdAt: Timestamp.now(),
         updatedAt: Timestamp.now(),
       };
 
-      await db.collection('members').doc(userRecord.uid).set(memberData);
-      console.log(`   📝 メンバー情報保存: ${userData.displayName} (${userData.plan}プラン, ${userData.role})`);
+      await db.collection('users').doc(userRecord.uid).set(memberData);
+      const displayName = `${userData.lastName} ${userData.firstName}`;
+      console.log(`   📝 メンバー情報保存: ${displayName} (${userData.plan}プラン, ${userData.role || 'member'})`);
       
     } catch (error) {
       console.error(`❌ エラー (${userData.email}):`, error);
@@ -151,7 +165,8 @@ async function seedUsers() {
   console.log('\n📋 ログイン情報:');
   console.log('================================');
   testUsers.forEach(user => {
-    console.log(`${user.displayName} (${user.plan}/${user.role})`);
+    const displayName = `${user.lastName} ${user.firstName}`;
+    console.log(`${displayName} (${user.plan}/${user.role || 'member'})`);
     console.log(`  Email: ${user.email}`);
     console.log(`  Password: ${user.password}`);
     console.log('--------------------------------');

@@ -8,11 +8,11 @@ import InformationSection from '@/components/sections/InformationSection';
 import ScheduleSection from '@/components/sections/ScheduleSection';
 import VideoSection from '@/components/sections/VideoSection';
 import ContentGridSection from '@/components/sections/ContentGridSection';
-import { useBlogArticles } from '@/hooks/useBlogs';
+import { useLatestBlogs } from '@/hooks/useBlogs';
 import { useNewsletters } from '@/hooks/useNewsletters';
 
 export default function LandingPage() {
-  const { articles: blogArticles, loading: blogLoading } = useBlogArticles(3);
+  const { blogs: blogArticles, loading: blogLoading } = useLatestBlogs(3);
   const { newsletters, loading: newslettersLoading } = useNewsletters(3);
 
   return (

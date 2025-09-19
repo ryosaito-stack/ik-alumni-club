@@ -18,9 +18,13 @@
     "seed:schedules": "ts-node --project tsconfig.node.json scripts/seed-schedules.ts",
     "seed:videos": "ts-node --project tsconfig.node.json scripts/seed-videos.ts",
     "seed:blogs": "ts-node --project tsconfig.node.json scripts/seed-blogs.ts",
+    "seed:newsletters": "ts-node --project tsconfig.node.json scripts/seed-newsletters.ts",
+    "test:firestore": "ts-node --project tsconfig.node.json scripts/test-firestore-connection.ts",
+    "check:informations": "ts-node --project tsconfig.node.json scripts/check-informations.ts",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
     "firebase": "^12.1.0",
     "firebase-admin": "^13.4.0",
     "next": "15.4.6",

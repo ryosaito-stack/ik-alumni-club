@@ -64,6 +64,18 @@ export default function EventDetailPage() {
       backText="BACK"
     >
       <div className="prose prose-lg max-w-none">
+        {/* 画像がある場合は表示 */}
+        {schedule.imageUrl && (
+          <div className="mb-8">
+            <img 
+              src={schedule.imageUrl} 
+              alt={schedule.title}
+              className="w-full rounded-lg shadow-md"
+              style={{ maxHeight: '500px', objectFit: 'cover' }}
+            />
+          </div>
+        )}
+        
         <div dangerouslySetInnerHTML={{ __html: schedule.content }} />
         
         {schedule.link && (

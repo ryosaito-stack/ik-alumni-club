@@ -54,7 +54,8 @@ export default function DashboardLayout({
     { name: 'お知らせ管理', href: '/admin/informations', icon: '📢' },
     { name: 'スケジュール管理', href: '/admin/schedules', icon: '📅' },
     { name: '動画管理', href: '/admin/videos', icon: '🎬' },
-    { name: messages.navigation.manageContents, href: '/admin/contents', icon: '📝' },
+    { name: 'ブログ管理', href: '/admin/blogs', icon: '📝' },
+    { name: 'ニュースレター管理', href: '/admin/newsletters', icon: '📰' },
     { name: messages.navigation.manageUsers, href: '/admin/users', icon: '👥' },
   ];
 

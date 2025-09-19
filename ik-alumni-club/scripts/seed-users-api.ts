@@ -113,7 +113,7 @@ async function createFirestoreDocument(uid: string, userData: any) {
     };
 
     const response = await fetch(
-      `${FIRESTORE_EMULATOR_HOST}/v1/projects/${PROJECT_ID}/databases/(default)/documents/members/${uid}`,
+      `${FIRESTORE_EMULATOR_HOST}/v1/projects/${PROJECT_ID}/databases/(default)/documents/users/${uid}`,
       {
         method: 'PATCH',
         headers: {

@@ -4,13 +4,12 @@ import {
   getVideo,
   getVideos,
   getPublishedVideos,
-  getCarouselVideos,
-  getVideosByCategory,
+  getLatestVideos,
   createVideo,
   updateVideo,
   deleteVideo,
 } from '@/lib/firestore/videos';
-import { Video, VideoFormData, VideoQueryOptions, VideoCategory } from '@/types';
+import { Video, VideoFormData, VideoQueryOptions } from '@/types';
 
 // 単一のVideoを取得するフック
 export const useVideo = (id: string) => {
@@ -89,8 +88,8 @@ export const usePublishedVideos = (options: VideoQueryOptions = {}) => {
   return { videos, loading, error };
 };
 
-// カルーセル用の動画を取得するフック
-export const useCarouselVideos = (limit: number = 5) => {
+// 最新の動画を取得するフック
+export const useLatestVideos = (limit: number = 5) => {
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -99,10 +98,10 @@ export const useCarouselVideos = (limit: number = 5) => {
     const fetchVideos = async () => {
       try {
         setLoading(true);
-        const data = await getCarouselVideos(limit);
+        const data = await getLatestVideos(limit);
         setVideos(data);
       } catch (err) {
-        setError(err instanceof Error ? err : new Error('Failed to fetch carousel videos'));
+        setError(err instanceof Error ? err : new Error('Failed to fetch latest videos'));
       } finally {
         setLoading(false);
       }
@@ -110,33 +109,6 @@ export const useCarouselVideos = (limit: number = 5) => {
 
     fetchVideos();
   }, [limit]);
-
-  return { videos, loading, error };
-};
-
-// カテゴリー別の動画を取得するフック
-export const useVideosByCategory = (category: VideoCategory, limit?: number) => {
-  const [videos, setVideos] = useState<Video[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-
-  useEffect(() => {
-    const fetchVideos = async () => {
-      try {
-        setLoading(true);
-        const data = await getVideosByCategory(category, limit);
-        setVideos(data);
-      } catch (err) {
-        setError(err instanceof Error ? err : new Error('Failed to fetch videos by category'));
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (category) {
-      fetchVideos();
-    }
-  }, [category, limit]);
 
   return { videos, loading, error };
 };
@@ -158,7 +130,7 @@ export const useVideoMutations = () => {
       setError(null);
       const author = {
         id: user.uid,
-        name: member.displayName || 'Unknown',
+        name: `${member.lastName} ${member.firstName}` || 'Unknown',
         role: member.role || 'member',
       };
       const id = await createVideo(data, author);

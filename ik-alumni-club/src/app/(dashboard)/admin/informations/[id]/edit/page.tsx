@@ -5,7 +5,8 @@ import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { useInformation, useInformationMutations } from '@/hooks/useInformations';
-import { InformationFormData, InformationCategory, TargetMember } from '@/types';
+import { InformationFormData } from '@/types';
+import { uploadImage, deleteImage, validateImageFile, createImagePreview, revokeImagePreview } from '@/lib/storage';
 
 export default function EditInformationPage() {
   const router = useRouter();
@@ -22,13 +23,17 @@ export default function EditInformationPage() {
   const [formData, setFormData] = useState<InformationFormData>({
     title: '',
     date: new Date(),
-    category: 'お知らせ' as InformationCategory,
     content: '',
-    summary: '',
-    targetMembers: ['ALL'] as TargetMember[],
-    isPinned: false,
+    imageUrl: '',
+    url: '',
     published: false,
   });
+
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imageError, setImageError] = useState<string | null>(null);
+  const [originalImageUrl, setOriginalImageUrl] = useState<string>('');
 
   // 既存データを読み込み
   useEffect(() => {
@@ -36,13 +41,12 @@ export default function EditInformationPage() {
       setFormData({
         title: information.title,
         date: information.date,
-        category: information.category,
         content: information.content,
-        summary: information.summary,
-        targetMembers: information.targetMembers,
-        isPinned: information.isPinned,
+        imageUrl: information.imageUrl || '',
+        url: information.url || '',
         published: information.published,
       });
+      setOriginalImageUrl(information.imageUrl || '');
     }
   }, [information]);
 
@@ -52,36 +56,103 @@ export default function EditInformationPage() {
     }
   }, [member, isAdmin, router]);
 
+  // クリーンアップ
+  useEffect(() => {
+    return () => {
+      if (imagePreview) {
+        revokeImagePreview(imagePreview);
+      }
+    };
+  }, [imagePreview]);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // バリデーション
+    const error = validateImageFile(file);
+    if (error) {
+      setImageError(error);
+      return;
+    }
+
+    setImageError(null);
+    setImageFile(file);
+
+    // 既存のプレビューをクリーンアップ
+    if (imagePreview) {
+      revokeImagePreview(imagePreview);
+    }
+
+    // 新しいプレビューを作成
+    const preview = createImagePreview(file);
+    setImagePreview(preview);
+  };
+
+  const handleRemoveImage = () => {
+    setImageFile(null);
+    if (imagePreview) {
+      revokeImagePreview(imagePreview);
+      setImagePreview(null);
+    }
+    setFormData({ ...formData, imageUrl: '' });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // バリデーション
-    if (!formData.title || !formData.summary || !formData.content) {
-      alert('タイトル、概要、内容は必須です');
+    if (!formData.title || !formData.content) {
+      alert('タイトルと内容は必須です');
       return;
     }
 
-    if (formData.targetMembers.length === 0) {
-      alert('対象会員を選択してください');
-      return;
+    let uploadedImageUrl = formData.imageUrl;
+
+    // 新しい画像のアップロード
+    if (imageFile) {
+      setUploadingImage(true);
+      try {
+        // 古い画像を削除（Firebase Storage内の画像の場合）
+        if (originalImageUrl && originalImageUrl.includes('firebasestorage.googleapis.com')) {
+          try {
+            await deleteImage(originalImageUrl);
+          } catch (err) {
+            console.error('Error deleting old image:', err);
+            // 削除に失敗しても続行
+          }
+        }
+
+        // 新しい画像をアップロード
+        uploadedImageUrl = await uploadImage(imageFile, 'informations');
+      } catch (err) {
+        console.error('Error uploading image:', err);
+        alert('画像のアップロードに失敗しました');
+        setUploadingImage(false);
+        return;
+      }
+      setUploadingImage(false);
+    } else if (formData.imageUrl === '' && originalImageUrl) {
+      // 画像が削除された場合、Firebase Storageから削除
+      if (originalImageUrl.includes('firebasestorage.googleapis.com')) {
+        try {
+          await deleteImage(originalImageUrl);
+        } catch (err) {
+          console.error('Error deleting image:', err);
+        }
+      }
     }
 
-    const success = await updateInformation(id, formData);
+    const success = await updateInformation(id, {
+      ...formData,
+      imageUrl: uploadedImageUrl,
+    });
+    
     if (success) {
       alert('お知らせを更新しました');
-      // router.refresh()を追加してキャッシュをクリア
       router.refresh();
       router.push('/admin/informations');
     }
-  };
-
-  const handleTargetMemberChange = (member: TargetMember) => {
-    setFormData(prev => {
-      const newTargetMembers = prev.targetMembers.includes(member)
-        ? prev.targetMembers.filter(m => m !== member)
-        : [...prev.targetMembers, member];
-      return { ...prev, targetMembers: newTargetMembers };
-    });
   };
 
   const formatDateForInput = (date: Date) => {
@@ -126,7 +197,6 @@ export default function EditInformationPage() {
           </Link>
         </div>
         <p className="mt-2 text-sm text-gray-600">
-          作成者: {information.author.name} | 
           作成日: {new Date(information.createdAt).toLocaleDateString('ja-JP')} | 
           更新日: {new Date(information.updatedAt).toLocaleDateString('ja-JP')}
         </p>
@@ -170,43 +240,6 @@ export default function EditInformationPage() {
           />
         </div>
 
-        {/* カテゴリー */}
-        <div>
-          <label htmlFor="category" className="block text-sm font-medium text-gray-700">
-            カテゴリー
-          </label>
-          <select
-            id="category"
-            value={formData.category}
-            onChange={(e) => setFormData({ ...formData, category: e.target.value as InformationCategory })}
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-          >
-            <option value="お知らせ">お知らせ</option>
-            <option value="更新情報">更新情報</option>
-            <option value="メンテナンス">メンテナンス</option>
-          </select>
-        </div>
-
-        {/* 概要 */}
-        <div>
-          <label htmlFor="summary" className="block text-sm font-medium text-gray-700">
-            概要（100文字程度） <span className="text-red-500">*</span>
-          </label>
-          <textarea
-            id="summary"
-            rows={2}
-            value={formData.summary}
-            onChange={(e) => setFormData({ ...formData, summary: e.target.value })}
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            placeholder="一覧ページに表示される概要文"
-            maxLength={200}
-            required
-          />
-          <p className="mt-1 text-sm text-gray-500">
-            {formData.summary.length}/200文字
-          </p>
-        </div>
-
         {/* 内容 */}
         <div>
           <label htmlFor="content" className="block text-sm font-medium text-gray-700">
@@ -226,48 +259,93 @@ export default function EditInformationPage() {
           </p>
         </div>
 
-        {/* 対象会員 */}
+        {/* 画像アップロード */}
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            対象会員 <span className="text-red-500">*</span>
+            画像（任意）
           </label>
-          <div className="mt-2 space-y-2">
-            {(['ALL', 'PLATINUM', 'BUSINESS', 'INDIVIDUAL'] as TargetMember[]).map(member => (
-              <label key={member} className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={formData.targetMembers.includes(member)}
-                  onChange={() => handleTargetMemberChange(member)}
-                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                />
-                <span className="ml-2 text-sm text-gray-700">
-                  {member === 'ALL' && '全員（非会員含む）'}
-                  {member === 'PLATINUM' && 'プラチナ会員'}
-                  {member === 'BUSINESS' && 'ビジネス会員以上'}
-                  {member === 'INDIVIDUAL' && '個人会員以上'}
+          
+          {/* 画像プレビュー */}
+          {(imagePreview || formData.imageUrl) && (
+            <div className="mt-2 relative inline-block">
+              <img
+                src={imagePreview || formData.imageUrl}
+                alt="Preview"
+                className="max-w-xs h-40 object-cover rounded-lg border border-gray-300"
+              />
+              <button
+                type="button"
+                onClick={handleRemoveImage}
+                className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          )}
+
+          {/* ファイル選択 */}
+          {!imagePreview && (
+            <div className="mt-2">
+              <label className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
+                <span className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                  新しい画像を選択
                 </span>
+                <input
+                  type="file"
+                  className="sr-only"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                />
               </label>
-            ))}
-          </div>
-          <p className="mt-1 text-sm text-gray-500">
-            複数選択可。階層的なアクセス制御が適用されます。
-          </p>
+              <p className="mt-1 text-xs text-gray-500">
+                JPEG, PNG, GIF, WebP（最大15MB）
+              </p>
+            </div>
+          )}
+
+          {/* エラー表示 */}
+          {imageError && (
+            <p className="mt-2 text-sm text-red-600">{imageError}</p>
+          )}
         </div>
 
-        {/* オプション */}
-        <div className="space-y-4">
-          <label className="flex items-center">
+        {/* 画像URL（直接入力） */}
+        {!imagePreview && (
+          <div>
+            <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700">
+              または画像URLを直接入力（任意）
+            </label>
             <input
-              type="checkbox"
-              checked={formData.isPinned}
-              onChange={(e) => setFormData({ ...formData, isPinned: e.target.checked })}
-              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+              type="url"
+              id="imageUrl"
+              value={formData.imageUrl}
+              onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              placeholder="https://example.com/image.jpg"
+              disabled={!!imageFile}
             />
-            <span className="ml-2 text-sm text-gray-700">
-              📌 ピン留め（常に上部に表示）
-            </span>
-          </label>
+          </div>
+        )}
 
+        {/* 外部リンク */}
+        <div>
+          <label htmlFor="url" className="block text-sm font-medium text-gray-700">
+            外部リンクURL（任意）
+          </label>
+          <input
+            type="url"
+            id="url"
+            value={formData.url}
+            onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            placeholder="https://example.com"
+          />
+        </div>
+
+        {/* 公開設定 */}
+        <div>
           <label className="flex items-center">
             <input
               type="checkbox"
@@ -291,10 +369,10 @@ export default function EditInformationPage() {
           </Link>
           <button
             type="submit"
-            disabled={updating}
+            disabled={updating || uploadingImage}
             className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
           >
-            {updating ? '更新中...' : '更新'}
+            {uploadingImage ? 'アップロード中...' : updating ? '更新中...' : '更新'}
           </button>
         </div>
       </form>

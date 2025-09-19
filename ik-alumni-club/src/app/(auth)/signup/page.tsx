@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import BenefitsAccordion from '@/components/BenefitsAccordion';
 
 export default function SignupPage() {
   return (
@@ -13,95 +14,174 @@ export default function SignupPage() {
       {/* メインコンテンツ */}
       <main className="flex-grow" style={{ paddingTop: '180px', paddingBottom: '80px' }}>
         <section className="max-w-4xl mx-auto px-4">
-          {/* ロゴ・タイトル部分 */}
-          <div className="text-center mb-10">
-            <div className="mb-2">
-              <span className="text-3xl font-bold text-gray-800">IK Alumni Club</span>
-            </div>
-            <div>
-              <span className="text-lg text-gray-600">IK Alumni Club Official Site</span>
-            </div>
+          {/* ヒーロー画像 */}
+          <div className="mb-10">
+            <img 
+              src="/images/top_supporter's.jpg" 
+              alt="IK ALUMNI COLOR GUARD TEAM SUPPORTER'S CLUB"
+              className="w-full h-auto rounded-lg shadow-xl"
+            />
           </div>
 
           {/* リード文 */}
-          <div className="bg-gray-50 rounded-lg p-6 mb-10 text-center">
-            <p className="text-gray-700 leading-relaxed">
-              IK Alumni Club 公式ファンクラブ「IK会員倶楽部」は、イベントチケットの最速先行受付やメンバーブログなどの限定コンテンツをお楽しみいただけるサービスです。
+          <div className="bg-gray-50 rounded-lg p-6 mb-10">
+            <p className="text-gray-700 leading-relaxed mb-3">
+              IK ALUMNI CGT supporter's CLUB とは、千葉県柏市を拠点に活動している「IK ALUMNI CGT」の後援会です。
+            </p>
+            <p className="text-gray-700 leading-relaxed mb-3">
+              本後援会は、年間を通してIK ALUMNI CGTの活動支援とともに、地元柏の地域活性化やカラーガードの普及活動に寄与する事を目的としています。
+            </p>
+            <p className="text-gray-700 leading-relaxed mb-3">
+              後援会特典は、「会員限定グッズ」「コンサート映像の配信」「会員ページ限定コンテンツ」「会報の配信」などなど！
+            </p>
+            <p className="text-gray-700 leading-relaxed font-bold text-center">
+              皆様のご入会お待ちしております！
             </p>
           </div>
 
-          {/* サービス内容 */}
-          <div className="mb-10">
-            <h2 className="text-2xl font-bold text-center mb-8 text-gray-800">SERVICE</h2>
-            <div className="flex justify-center gap-12">
+          {/* 会員種別 */}
+          <div className="bg-white border border-gray-200 rounded-lg p-6 mb-8">
+            <h3 className="text-lg font-bold mb-4 text-gray-800">会員種別</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
               <div className="text-center">
-                <div className="w-20 h-20 mx-auto mb-3 bg-indigo-100 rounded-full flex items-center justify-center">
-                  <svg className="w-10 h-10 text-indigo-600" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M5,7h2v10H5V7z M1,10h2v4H1V10z M9,2h2v18H9V2z M13,4h2v18h-2V4z M17,7h2v10h-2V7z M21,10h2v4h-2V10z"/>
-                  </svg>
-                </div>
-                <p className="text-sm font-medium text-gray-700">RADIO</p>
+                <img 
+                  src="/images/member/kojin.png" 
+                  alt="個人会員" 
+                  className="w-full h-auto"
+                />
               </div>
               <div className="text-center">
-                <div className="w-20 h-20 mx-auto mb-3 bg-indigo-100 rounded-full flex items-center justify-center">
-                  <svg className="w-10 h-10 text-indigo-600" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M5,19h1.4l9.3-9.3l-1.4-1.4L5,17.6V19z M21,21H3v-4.2L16.4,3.3c0.4-0.4,1-0.4,1.4,0l2.8,2.8c0.4,0.4,0.4,1,0,1.4L9.2,19H21V21z M15.7,6.9l1.4,1.4l1.4-1.4l-1.4-1.4C17.1,5.4,15.7,6.9,15.7,6.9z"/>
-                  </svg>
-                </div>
-                <p className="text-sm font-medium text-gray-700">Blog (Trial)</p>
+                <img 
+                  src="/images/member/houjin.png" 
+                  alt="法人会員" 
+                  className="w-full h-auto"
+                />
+              </div>
+              <div className="text-center transform scale-107">
+                <img 
+                  src="/images/member/puratina.png" 
+                  alt="プラチナ会員" 
+                  className="w-full h-auto"
+                />
               </div>
             </div>
           </div>
 
-          {/* 会費 */}
-          <div className="bg-white border border-gray-200 rounded-lg p-6 mb-10">
-            <h3 className="text-lg font-bold mb-4 text-gray-800">会費</h3>
+          {/* 特典一覧 */}
+          <div className="bg-white border border-gray-200 rounded-lg p-6 mb-8">
+            <h3 className="text-lg font-bold mb-4 text-gray-800">特典一覧</h3>
+            <div className="w-full">
+              <img 
+                src="/images/tokuten.jpg" 
+                alt="特典一覧" 
+                className="w-full h-auto"
+              />
+            </div>
+          </div>
+
+          {/* 各特典詳細 */}
+          <div className="bg-white border border-gray-200 rounded-lg p-6 mb-8">
+            <h3 className="text-lg font-bold mb-4 text-gray-800">各特典詳細</h3>
+            <BenefitsAccordion />
+          </div>
+
+          {/* 入会スケジュール */}
+          <div className="bg-white border border-gray-200 rounded-lg p-6 mb-8">
+            <h3 className="text-lg font-bold mb-4 text-gray-800">入会スケジュール</h3>
             <table className="w-full">
               <tbody>
                 <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 pr-4 text-gray-700 font-medium w-24">月額</th>
-                  <td className="py-3 text-gray-700">
-                    <p className="text-lg font-bold text-indigo-600">無料会員：0円（税込）</p>
+                  <th className="text-left py-3 pr-4 text-gray-700 font-medium align-top w-40">募集期間</th>
+                  <td className="py-3 text-gray-600">
+                    <p>通年募集</p>
+                    <p className="text-sm text-gray-500 mt-1">※いつでもご入会いただけます</p>
+                  </td>
+                </tr>
+                <tr className="border-b border-gray-200">
+                  <th className="text-left py-3 pr-4 text-gray-700 font-medium align-top w-40">会員期間</th>
+                  <td className="py-3 text-gray-600">
+                    <p>入会日から1年間</p>
+                    <p className="text-sm text-gray-500 mt-1">※自動更新となります</p>
+                  </td>
+                </tr>
+                <tr>
+                  <th className="text-left py-3 pr-4 text-gray-700 font-medium align-top w-40">入会手続き</th>
+                  <td className="py-3 text-gray-600">
+                    <ul className="space-y-1">
+                      <li>1. オンラインフォームからお申し込み</li>
+                      <li>2. お支払い手続き</li>
+                      <li>3. 会員登録完了メール受信</li>
+                      <li>4. 会員サイトへログイン可能</li>
+                    </ul>
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
 
-          {/* 推奨環境 */}
+          {/* お支払い方法 */}
           <div className="bg-white border border-gray-200 rounded-lg p-6 mb-8">
-            <h3 className="text-lg font-bold mb-4 text-gray-800">推奨環境</h3>
+            <h3 className="text-lg font-bold mb-4 text-gray-800">お支払い方法</h3>
             <table className="w-full">
               <tbody>
                 <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 pr-4 text-gray-700 font-medium align-top w-32">OS</th>
+                  <th className="text-left py-3 pr-4 text-gray-700 font-medium align-top w-40">決済方法</th>
                   <td className="py-3 text-gray-600">
                     <ul className="space-y-1">
-                      <li>・iOSの場合、iOS15.0以上</li>
-                      <li>・Androidの場合、8.0以上</li>
-                      <li>・Windowsの場合、Windows10以上</li>
-                      <li>・Mac OS Xの場合、macOS 10.12以上</li>
+                      <li>・銀行振込</li>
                     </ul>
                   </td>
                 </tr>
-                <tr>
-                  <th className="text-left py-3 pr-4 text-gray-700 font-medium align-top w-32">ブラウザ</th>
+                <tr className="border-b border-gray-200">
+                  <th className="text-left py-3 pr-4 text-gray-700 font-medium align-top w-40">支払いサイクル</th>
                   <td className="py-3 text-gray-600">
-                    <ul className="space-y-1">
-                      <li>・iOSの場合、Safariの最新版</li>
-                      <li>・Androidの場合、Chromeの最新版</li>
-                      <li>・Windowsの場合、Microsoft Edge、Chromeの最新版</li>
-                      <li>・Mac OS Xの場合、SafariまたはChromeの最新版</li>
-                    </ul>
+                    <p>年払い（一括）</p>
+                    <p className="text-sm text-gray-500 mt-1">※分割払いは承っておりません</p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* 特典の配送時期について */}
+          <div className="bg-white border border-gray-200 rounded-lg p-6 mb-8">
+            <h3 className="text-lg font-bold mb-4 text-gray-800">特典の配送時期について</h3>
+            <table className="w-full">
+              <tbody>
+                <tr className="border-b border-gray-200">
+                  <th className="text-left py-3 pr-4 text-gray-700 font-medium align-top w-40">会員限定グッズ</th>
+                  <td className="py-3 text-gray-600">
+                    <p>入会後1ヶ月以内に発送</p>
+                    <p className="text-sm text-gray-500 mt-1">※在庫状況により遅れる場合があります</p>
+                  </td>
+                </tr>
+                <tr className="border-b border-gray-200">
+                  <th className="text-left py-3 pr-4 text-gray-700 font-medium align-top w-40">デジタルコンテンツ</th>
+                  <td className="py-3 text-gray-600">
+                    <p>入会手続き完了後、即時利用可能</p>
+                    <p className="text-sm text-gray-500 mt-1">※会員サイトからアクセスいただけます</p>
+                  </td>
+                </tr>
+                <tr className="border-b border-gray-200">
+                  <th className="text-left py-3 pr-4 text-gray-700 font-medium align-top w-40">会報</th>
+                  <td className="py-3 text-gray-600">
+                    <p>毎月月末に配信</p>
+                    <p className="text-sm text-gray-500 mt-1">※メールまたは会員サイトでご確認いただけます</p>
+                  </td>
+                </tr>
+                <tr>
+                  <th className="text-left py-3 pr-4 text-gray-700 font-medium align-top w-40">プラチナ会員<br />限定ウェア</th>
+                  <td className="py-3 text-gray-600">
+                    <p>入会後2ヶ月以内に発送</p>
+                    <p className="text-sm text-gray-500 mt-1">※サイズ確認のご連絡をさせていただきます</p>
                   </td>
                 </tr>
               </tbody>
             </table>
             
             <ul className="mt-4 space-y-2 text-sm text-gray-500">
-              <li>※当サイトはタブレット端末からのご利用は動作推奨しておりません。<br />
-              なお、ガラホ（テンキーの付いたスマートフォン）、らくらくスマートフォンにつきましては動作非対応となります。</li>
-              <li>※「mail.ikalumni.com」からのドメインを受信可能な設定にしてください。</li>
+              <li>※配送先は日本国内に限らせていただきます。</li>
+              <li>※配送状況はマイページからご確認いただけます。</li>
             </ul>
           </div>
 
@@ -113,10 +193,6 @@ export default function SignupPage() {
             >
               登録手続きに進む
             </Link>
-            <p className="mt-4 text-sm text-gray-500">
-              ※ご登録にはIK Alumni IDが必要となります。<br />
-              <Link href="/faq" className="text-indigo-600 hover:underline">IK Alumni IDとは？</Link>
-            </p>
           </div>
         </section>
       </main>

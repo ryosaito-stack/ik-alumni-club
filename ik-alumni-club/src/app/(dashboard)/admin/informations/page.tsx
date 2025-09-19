@@ -5,12 +5,11 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useInformations, useInformationMutations } from '@/hooks/useInformations';
-import { Information, InformationCategory } from '@/types';
+import { Information } from '@/types';
 
 export default function AdminInformationsPage() {
   const router = useRouter();
   const { member, loading: authLoading } = useAuth();
-  const [selectedCategory, setSelectedCategory] = useState<InformationCategory | 'all'>('all');
   const [showUnpublished, setShowUnpublished] = useState(true);
   
   // 管理者チェック
@@ -19,7 +18,6 @@ export default function AdminInformationsPage() {
   // お知らせ一覧を取得（管理画面なので全て取得）
   const { informations, loading, error } = useInformations({
     published: showUnpublished ? undefined : true,
-    category: selectedCategory === 'all' ? undefined : selectedCategory,
     orderBy: 'date',
     orderDirection: 'desc',
   });
@@ -52,34 +50,6 @@ export default function AdminInformationsPage() {
     });
   };
 
-  const getCategoryBadgeColor = (category: InformationCategory) => {
-    switch (category) {
-      case 'お知らせ':
-        return 'bg-blue-100 text-blue-800';
-      case '更新情報':
-        return 'bg-green-100 text-green-800';
-      case 'メンテナンス':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getTargetMembersBadge = (targetMembers: string[]) => {
-    if (targetMembers.includes('ALL')) {
-      return 'bg-gray-100 text-gray-800';
-    }
-    if (targetMembers.includes('PLATINUM')) {
-      return 'bg-purple-100 text-purple-800';
-    }
-    if (targetMembers.includes('BUSINESS')) {
-      return 'bg-blue-100 text-blue-800';
-    }
-    if (targetMembers.includes('INDIVIDUAL')) {
-      return 'bg-green-100 text-green-800';
-    }
-    return 'bg-gray-100 text-gray-800';
-  };
 
   if (loading || authLoading) {
     return (
@@ -115,22 +85,6 @@ export default function AdminInformationsPage() {
 
       {/* フィルター */}
       <div className="mt-6 flex flex-wrap gap-4">
-        <div>
-          <label htmlFor="category" className="block text-sm font-medium text-gray-700">
-            カテゴリー
-          </label>
-          <select
-            id="category"
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value as InformationCategory | 'all')}
-            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-          >
-            <option value="all">すべて</option>
-            <option value="お知らせ">お知らせ</option>
-            <option value="更新情報">更新情報</option>
-            <option value="メンテナンス">メンテナンス</option>
-          </select>
-        </div>
         <div className="flex items-end">
           <label className="flex items-center">
             <input
@@ -166,16 +120,10 @@ export default function AdminInformationsPage() {
                       日付
                     </th>
                     <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                      カテゴリー
-                    </th>
-                    <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
                       タイトル
                     </th>
                     <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                      対象会員
-                    </th>
-                    <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                      作成者
+                      画像/リンク
                     </th>
                     <th className="relative py-3.5 pl-3 pr-4 sm:pr-6">
                       <span className="sr-only">Actions</span>
@@ -185,7 +133,7 @@ export default function AdminInformationsPage() {
                 <tbody className="divide-y divide-gray-200 bg-white">
                   {informations.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="px-3 py-4 text-sm text-gray-500 text-center">
+                      <td colSpan={5} className="px-3 py-4 text-sm text-gray-500 text-center">
                         お知らせがありません
                       </td>
                     </tr>
@@ -193,44 +141,31 @@ export default function AdminInformationsPage() {
                     informations.map((info) => (
                       <tr key={info.id}>
                         <td className="whitespace-nowrap px-3 py-4 text-sm">
-                          <div className="flex items-center gap-2">
-                            {info.isPinned && (
-                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
-                                📌 固定
-                              </span>
-                            )}
-                            {info.published ? (
-                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-                                公開
-                              </span>
-                            ) : (
-                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
-                                下書き
-                              </span>
-                            )}
-                          </div>
+                          {info.published ? (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                              公開
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                              下書き
+                            </span>
+                          )}
                         </td>
                         <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-900">
                           {formatDate(info.date)}
                         </td>
-                        <td className="whitespace-nowrap px-3 py-4 text-sm">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getCategoryBadgeColor(info.category)}`}>
-                            {info.category}
-                          </span>
-                        </td>
                         <td className="px-3 py-4 text-sm text-gray-900">
-                          <div>
-                            <div className="font-medium">{info.title}</div>
-                            <div className="text-gray-500 text-xs mt-1">{info.summary}</div>
-                          </div>
-                        </td>
-                        <td className="whitespace-nowrap px-3 py-4 text-sm">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getTargetMembersBadge(info.targetMembers)}`}>
-                            {info.targetMembers.join(', ')}
-                          </span>
+                          <div className="font-medium">{info.title}</div>
                         </td>
                         <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                          {info.author.name}
+                          <div className="flex gap-2">
+                            {info.imageUrl && (
+                              <span className="text-blue-600">画像</span>
+                            )}
+                            {info.url && (
+                              <span className="text-blue-600">リンク</span>
+                            )}
+                          </div>
                         </td>
                         <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                           <Link

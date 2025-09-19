@@ -21,7 +21,8 @@ import { Content, Member, MemberPlan } from '@/types';
 const planHierarchy: Record<MemberPlan, MemberPlan[]> = {
   individual: ['individual'],
   business: ['individual', 'business'],
-  platinum: ['individual', 'business', 'platinum'],
+  platinum_individual: ['individual', 'business', 'platinum_individual', 'platinum_business'],
+  platinum_business: ['individual', 'business', 'platinum_individual', 'platinum_business'],
 };
 
 // コンテンツ取得（プランによるフィルタリング）
@@ -296,7 +297,7 @@ export function canAccessContent(userPlan: MemberPlan, contentPlan: MemberPlan):
 // メンバー情報を取得
 export async function getMemberById(uid: string): Promise<Member | null> {
   try {
-    const docRef = doc(db, 'members', uid);
+    const docRef = doc(db, 'users', uid);
     const docSnap = await getDoc(docRef);
     
     if (docSnap.exists()) {
@@ -304,19 +305,31 @@ export async function getMemberById(uid: string): Promise<Member | null> {
       return {
         uid: docSnap.id,
         email: data.email,
-        displayName: data.displayName,
+        
+        // 名前情報
+        lastName: data.lastName || '',
+        firstName: data.firstName || '',
+        lastNameKana: data.lastNameKana || '',
+        firstNameKana: data.firstNameKana || '',
+        
+        // 住所情報
+        postalCode: data.postalCode || '',
+        prefecture: data.prefecture || '',
+        city: data.city || '',
+        address: data.address || '',
+        building: data.building,
+        
+        // 連絡先
+        phoneNumber: data.phoneNumber || '',
+        
+        // 会員情報
         plan: data.plan || 'individual',
         role: data.role,
+        isActive: data.isActive !== undefined ? data.isActive : true,
+        
+        // システム情報
         createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : (data.createdAt ? new Date(data.createdAt) : new Date()),
         updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate() : (data.updatedAt ? new Date(data.updatedAt) : new Date()),
-        profileImageUrl: data.profileImageUrl,
-        phoneNumber: data.phoneNumber,
-        address: data.address,
-        bio: data.bio,
-        company: data.company,
-        position: data.position,
-        graduationYear: data.graduationYear,
-        major: data.major,
       };
     }
     return null;
@@ -329,10 +342,10 @@ export async function getMemberById(uid: string): Promise<Member | null> {
 // メンバー情報を更新
 export async function updateMemberProfile(
   uid: string,
-  updates: Partial<Omit<Member, 'uid' | 'email' | 'createdAt' | 'plan' | 'role'>>
+  updates: Partial<Omit<Member, 'uid' | 'email' | 'createdAt'>>
 ): Promise<void> {
   try {
-    const docRef = doc(db, 'members', uid);
+    const docRef = doc(db, 'users', uid);
     
     // 更新するデータを準備（undefined値を除外）
     const updateData: any = {
@@ -357,7 +370,7 @@ export async function updateMemberProfile(
 // メンバー情報を作成または更新（初回ログイン時など）
 export async function createOrUpdateMember(member: Partial<Member> & { uid: string; email: string }): Promise<void> {
   try {
-    const docRef = doc(db, 'members', member.uid);
+    const docRef = doc(db, 'users', member.uid);
     
     const existingDoc = await getDoc(docRef);
     
@@ -372,6 +385,7 @@ export async function createOrUpdateMember(member: Partial<Member> & { uid: stri
       await setDoc(docRef, {
         ...member,
         plan: member.plan || 'individual',
+        isActive: member.isActive !== undefined ? member.isActive : true,
         createdAt: Timestamp.now(),
         updatedAt: Timestamp.now(),
       });
@@ -389,7 +403,7 @@ export async function createOrUpdateMember(member: Partial<Member> & { uid: stri
 // 全メンバー取得
 export async function getAllMembers(): Promise<Member[]> {
   try {
-    const q = query(collection(db, 'members'), orderBy('createdAt', 'desc'));
+    const q = query(collection(db, 'users'), orderBy('createdAt', 'desc'));
     const querySnapshot = await getDocs(q);
     
     const members: Member[] = [];
@@ -398,19 +412,31 @@ export async function getAllMembers(): Promise<Member[]> {
       members.push({
         uid: doc.id,
         email: data.email,
-        displayName: data.displayName || '',
+        
+        // 名前情報
+        lastName: data.lastName || '',
+        firstName: data.firstName || '',
+        lastNameKana: data.lastNameKana || '',
+        firstNameKana: data.firstNameKana || '',
+        
+        // 住所情報
+        postalCode: data.postalCode || '',
+        prefecture: data.prefecture || '',
+        city: data.city || '',
+        address: data.address || '',
+        building: data.building,
+        
+        // 連絡先
+        phoneNumber: data.phoneNumber || '',
+        
+        // 会員情報
         plan: data.plan || 'individual',
         role: data.role,
+        isActive: data.isActive !== undefined ? data.isActive : true,
+        
+        // システム情報
         createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : (data.createdAt ? new Date(data.createdAt) : new Date()),
         updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate() : (data.updatedAt ? new Date(data.updatedAt) : new Date()),
-        profileImageUrl: data.profileImageUrl,
-        phoneNumber: data.phoneNumber,
-        address: data.address,
-        bio: data.bio,
-        company: data.company,
-        position: data.position,
-        graduationYear: data.graduationYear,
-        major: data.major,
       });
     });
     
@@ -424,7 +450,7 @@ export async function getAllMembers(): Promise<Member[]> {
 // メンバーのプラン更新
 export async function updateMemberPlan(uid: string, plan: MemberPlan): Promise<void> {
   try {
-    const docRef = doc(db, 'members', uid);
+    const docRef = doc(db, 'users', uid);
     await updateDoc(docRef, {
       plan,
       updatedAt: Timestamp.now(),
@@ -438,7 +464,7 @@ export async function updateMemberPlan(uid: string, plan: MemberPlan): Promise<v
 // メンバーのロール更新
 export async function updateMemberRole(uid: string, role: 'admin' | 'member'): Promise<void> {
   try {
-    const docRef = doc(db, 'members', uid);
+    const docRef = doc(db, 'users', uid);
     await updateDoc(docRef, {
       role,
       updatedAt: Timestamp.now(),
@@ -449,10 +475,24 @@ export async function updateMemberRole(uid: string, role: 'admin' | 'member'): P
   }
 }
 
+// メンバーのアクティブ状態更新
+export async function updateMemberActiveStatus(uid: string, isActive: boolean): Promise<void> {
+  try {
+    const docRef = doc(db, 'users', uid);
+    await updateDoc(docRef, {
+      isActive,
+      updatedAt: Timestamp.now(),
+    });
+  } catch (error) {
+    console.error('Error updating member active status:', error);
+    throw error;
+  }
+}
+
 // メンバー削除
 export async function deleteMember(uid: string): Promise<void> {
   try {
-    await deleteDoc(doc(db, 'members', uid));
+    await deleteDoc(doc(db, 'users', uid));
   } catch (error) {
     console.error('Error deleting member:', error);
     throw error;

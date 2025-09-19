@@ -31,7 +31,7 @@ export default function LoginPage() {
       const user = await login(formData.email, formData.password);
       
       // ユーザーのロールを確認
-      const memberDoc = await getDoc(doc(db, 'members', user.uid));
+      const memberDoc = await getDoc(doc(db, 'users', user.uid));
       const memberData = memberDoc.data() as Member;
       
       // 管理者なら/dashboardへ、それ以外は/へリダイレクト

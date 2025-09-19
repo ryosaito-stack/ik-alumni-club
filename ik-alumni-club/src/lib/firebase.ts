@@ -2,6 +2,7 @@ import { initializeApp, getApps } from 'firebase/app';
 import { getAuth, connectAuthEmulator } from 'firebase/auth';
 import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
 import { getStorage, connectStorageEmulator } from 'firebase/storage';
+import { getAnalytics, isSupported } from 'firebase/analytics';
 
 // Firebase configuration
 const firebaseConfig = {
@@ -11,6 +12,7 @@ const firebaseConfig = {
   storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || 'demo-bucket',
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || 'demo-sender',
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || 'demo-app',
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
 // Initialize Firebase app
@@ -20,6 +22,16 @@ const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
+
+// Initialize Analytics (only in browser and production)
+export let analytics: any = null;
+if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_USE_EMULATORS !== 'true') {
+  isSupported().then(supported => {
+    if (supported) {
+      analytics = getAnalytics(app);
+    }
+  });
+}
 
 // Connect to emulators if enabled
 if (process.env.NEXT_PUBLIC_USE_EMULATORS === 'true') {

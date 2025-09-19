@@ -57,6 +57,18 @@ export default function ScheduleSection() {
                     <h3 className="font-bold text-gray-800 mb-2 group-hover:text-indigo-600 transition-colors duration-300">
                       {schedule.title}
                     </h3>
+                    
+                    {/* 画像がある場合はサムネイル表示 */}
+                    {schedule.imageUrl && (
+                      <div className="mb-2">
+                        <img 
+                          src={schedule.imageUrl} 
+                          alt={schedule.title}
+                          className="w-full h-24 object-cover rounded"
+                        />
+                      </div>
+                    )}
+                    
                     {schedule.link && (
                       <div className="mt-auto">
                         <a 

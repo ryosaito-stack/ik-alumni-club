@@ -8,7 +8,7 @@ import { usePublishedVideos } from '@/hooks/useVideos';
 export default function VideosPage() {
   // Firestoreから公開済み動画を取得
   const { videos, loading } = usePublishedVideos({
-    orderBy: 'createdAt',
+    orderBy: 'date',
     orderDirection: 'desc',
   });
 
@@ -57,9 +57,9 @@ export default function VideosPage() {
               {video.title}
             </h3>
             
-            {/* 公開日付 */}
+            {/* 日付 */}
             <p className="mt-2.5 text-left text-sm text-gray-500">
-              {new Date(video.createdAt).toLocaleDateString('ja-JP')}
+              {new Date(video.date).toLocaleDateString('ja-JP')}
             </p>
           </Link>
         )}

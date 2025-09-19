@@ -26,6 +26,7 @@ const convertFirestoreToSchedule = (id: string, data: any): Schedule => {
     title: data.title || '',
     content: data.content || '',
     date: data.date?.toDate() || new Date(),
+    imageUrl: data.imageUrl || undefined,
     link: data.link || undefined,
     sortOrder: data.sortOrder || undefined,
     published: data.published || false,
@@ -57,12 +58,7 @@ export const getSchedules = async (options: ScheduleQueryOptions = {}): Promise<
   try {
     const constraints: QueryConstraint[] = [];
 
-    // 公開状態でフィルタリング
-    if (options.published !== undefined) {
-      constraints.push(where('published', '==', options.published));
-    }
-
-    // 日付範囲でフィルタリング
+    // 日付範囲でフィルタリング（whereとorderByの組み合わせは避ける）
     if (options.startDate) {
       constraints.push(where('date', '>=', Timestamp.fromDate(options.startDate)));
     }
@@ -74,26 +70,50 @@ export const getSchedules = async (options: ScheduleQueryOptions = {}): Promise<
     const orderField = options.orderBy || 'date';
     const orderDirection = options.orderDirection || 'asc';
     
-    // sortOrderとdateの複合ソート
-    if (orderField === 'date') {
-      constraints.push(orderBy('date', orderDirection));
-      constraints.push(orderBy('sortOrder', 'asc'));
-    } else {
+    // whereクエリがない場合のみorderByを追加
+    if (!options.startDate && !options.endDate) {
       constraints.push(orderBy(orderField, orderDirection));
-    }
-
-    // 取得件数制限
-    if (options.limit) {
-      constraints.push(limit(options.limit));
     }
 
     const q = query(collection(db, COLLECTION_NAME), ...constraints);
     const querySnapshot = await getDocs(q);
 
-    const schedules: Schedule[] = [];
+    let schedules: Schedule[] = [];
     querySnapshot.forEach((doc) => {
-      schedules.push(convertFirestoreToSchedule(doc.id, doc.data()));
+      const schedule = convertFirestoreToSchedule(doc.id, doc.data());
+      // クライアント側で公開状態をフィルタリング
+      if (options.published === undefined || schedule.published === options.published) {
+        schedules.push(schedule);
+      }
     });
+
+    // クライアント側でソート
+    schedules.sort((a, b) => {
+      if (orderField === 'date') {
+        const dateCompare = orderDirection === 'asc' 
+          ? a.date.getTime() - b.date.getTime()
+          : b.date.getTime() - a.date.getTime();
+        
+        if (dateCompare === 0) {
+          // 同じ日付の場合、sortOrderでソート（昇順）
+          const aSortOrder = a.sortOrder ?? Number.MAX_SAFE_INTEGER;
+          const bSortOrder = b.sortOrder ?? Number.MAX_SAFE_INTEGER;
+          return aSortOrder - bSortOrder;
+        }
+        
+        return dateCompare;
+      } else if (orderField === 'createdAt' || orderField === 'updatedAt') {
+        const aTime = a[orderField].getTime();
+        const bTime = b[orderField].getTime();
+        return orderDirection === 'asc' ? aTime - bTime : bTime - aTime;
+      }
+      return 0;
+    });
+
+    // limit処理
+    if (options.limit && schedules.length > options.limit) {
+      schedules = schedules.slice(0, options.limit);
+    }
 
     return schedules;
   } catch (error) {
@@ -116,13 +136,26 @@ export const createSchedule = async (
   author: { id: string; name: string; role: string }
 ): Promise<string> => {
   try {
-    const docData = {
-      ...data,
+    const docData: any = {
+      title: data.title,
+      content: data.content,
       date: Timestamp.fromDate(data.date),
+      published: data.published,
       author,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     };
+
+    // オプショナルフィールドは値がある場合のみ追加
+    if (data.imageUrl) {
+      docData.imageUrl = data.imageUrl;
+    }
+    if (data.link) {
+      docData.link = data.link;
+    }
+    if (data.sortOrder !== undefined && data.sortOrder !== null) {
+      docData.sortOrder = data.sortOrder;
+    }
 
     const docRef = await addDoc(collection(db, COLLECTION_NAME), docData);
     return docRef.id;
@@ -139,11 +172,24 @@ export const updateSchedule = async (
 ): Promise<void> => {
   try {
     const docRef = doc(db, COLLECTION_NAME, id);
-    const updateData = {
-      ...data,
+    const updateData: any = {
+      title: data.title,
+      content: data.content,
       date: Timestamp.fromDate(data.date),
+      published: data.published,
       updatedAt: serverTimestamp(),
     };
+
+    // オプショナルフィールドは値がある場合のみ追加
+    if (data.imageUrl !== undefined) {
+      updateData.imageUrl = data.imageUrl || '';
+    }
+    if (data.link !== undefined) {
+      updateData.link = data.link || '';
+    }
+    if (data.sortOrder !== undefined && data.sortOrder !== null) {
+      updateData.sortOrder = data.sortOrder;
+    }
 
     await updateDoc(docRef, updateData);
   } catch (error) {

@@ -7,11 +7,18 @@ import { useAuth } from '@/hooks/useAuth';
 
 export default function InformationSection() {
   const { member } = useAuth();
-  const { informations, loading } = useAvailableInformations({
+  const { informations, loading, error } = useAvailableInformations({
     limit: 3,
     orderBy: 'date',
     orderDirection: 'desc',
   });
+
+  // デバッグ用ログ
+  useEffect(() => {
+    console.log('InformationSection - loading:', loading);
+    console.log('InformationSection - informations:', informations);
+    console.log('InformationSection - error:', error);
+  }, [loading, informations, error]);
 
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString('ja-JP', {

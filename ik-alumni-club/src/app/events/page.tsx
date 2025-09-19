@@ -144,12 +144,42 @@ export default function EventsPage() {
                     <h3 className="text-xl font-semibold text-gray-800 mb-2">
                       {schedule.title}
                     </h3>
-                    <span className="inline-flex items-center text-indigo-600 hover:text-indigo-800 transition-colors">
-                      詳細を見る
-                      <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </span>
+                    
+                    {/* 画像がある場合は表示 */}
+                    {schedule.imageUrl && (
+                      <div className="mb-3">
+                        <img 
+                          src={schedule.imageUrl} 
+                          alt={schedule.title}
+                          className="h-32 w-full object-cover rounded-md"
+                        />
+                      </div>
+                    )}
+                    
+                    <div className="flex items-center gap-4">
+                      <span className="inline-flex items-center text-indigo-600 hover:text-indigo-800 transition-colors">
+                        詳細を見る
+                        <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </span>
+                      
+                      {/* 外部リンクがある場合 */}
+                      {schedule.link && (
+                        <a 
+                          href={schedule.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="inline-flex items-center text-gray-600 hover:text-gray-800 transition-colors"
+                        >
+                          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                          </svg>
+                          外部リンク
+                        </a>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

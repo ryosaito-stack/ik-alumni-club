@@ -108,16 +108,21 @@ export default function Header({ transparent = false }: HeaderProps) {
                 >
                   CONTACT
                 </a>
+                {user && (
+                  <Link href="/profile" className={`transition-colors font-3d flex items-center h-full ${textColor.nav}`}>
+                    MY PAGE
+                  </Link>
+                )}
               </nav>
               
               {/* SNSアイコン */}
               <div className="flex items-center relative h-6" style={{ marginLeft: '13px', paddingLeft: '13px', gap: '13px' }}>
-                <div className="absolute left-0 w-px bg-black" style={{ height: '18px', top: '50%', transform: 'translateY(-50%)' }}></div>
+                <div className={`absolute left-0 w-px ${transparent && !isScrolled ? 'bg-white' : 'bg-black'}`} style={{ height: '18px', top: '50%', transform: 'translateY(-50%)' }}></div>
                 {[
-                  { name: 'X', icon: '/images/icons8-x-50.png', url: '#' },
-                  { name: 'Instagram', icon: '/images/icons8-instagram-50.png', url: '#' },
-                  { name: 'YouTube', icon: '/images/icons8-youtube-50.png', url: '#' },
-                  { name: 'TikTok', icon: '/images/icons8-tiktok-50.png', url: '#' }
+                  { name: 'X', icon: '/images/icons8-x-50.png', whiteIcon: '/images/icons8-x-50 (1).png', url: '#' },
+                  { name: 'Instagram', icon: '/images/icons8-instagram-50.png', whiteIcon: '/images/icons8-instagram-50 (1).png', url: '#' },
+                  { name: 'YouTube', icon: '/images/icons8-youtube-50.png', whiteIcon: '/images/icons8-youtube-50 (1).png', url: '#' },
+                  { name: 'TikTok', icon: '/images/icons8-tiktok-50.png', whiteIcon: '/images/icons8-tiktok-50 (1).png', url: '#' }
                 ].map((sns) => (
                   <a
                     key={sns.name}
@@ -127,7 +132,7 @@ export default function Header({ transparent = false }: HeaderProps) {
                     className="transition-all hover:scale-110"
                   >
                     <Image
-                      src={sns.icon}
+                      src={transparent && !isScrolled ? sns.whiteIcon : sns.icon}
                       alt={sns.name}
                       width={24}
                       height={24}
@@ -160,15 +165,15 @@ export default function Header({ transparent = false }: HeaderProps) {
                 <>
                   {/* ログイン中の表示 */}
                   <span className={`text-sm ${transparent && !isScrolled ? 'text-white' : 'text-gray-700'}`}>
-                    {member?.displayName || user.email}
+                    {member ? `${member.lastName} ${member.firstName}` : user.email}
                   </span>
                   {member?.plan && (
                     <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                      member.plan === 'platinum' ? 'bg-purple-100 text-purple-800' :
+                      member.plan.includes('platinum') ? 'bg-purple-100 text-purple-800' :
                       member.plan === 'business' ? 'bg-blue-100 text-blue-800' :
                       'bg-green-100 text-green-800'
                     }`}>
-                      {member.plan.toUpperCase()}
+                      {member.plan.toUpperCase().replace('_', ' ')}
                     </span>
                   )}
                   {isAdmin && (
@@ -228,17 +233,20 @@ export default function Header({ transparent = false }: HeaderProps) {
               >
                 CONTACT
               </a>
+              {user && (
+                <Link href="/profile" className="block text-xl font-semibold text-gray-700 font-3d">MY PAGE</Link>
+              )}
               {user ? (
                 <>
                   <div className="pt-4 border-t">
-                    <p className="text-sm text-gray-600">ログイン中: {member?.displayName || user.email}</p>
+                    <p className="text-sm text-gray-600">ログイン中: {member ? `${member.lastName} ${member.firstName}` : user.email}</p>
                     {member?.plan && (
                       <span className={`inline-block mt-2 px-3 py-1 text-xs font-semibold rounded-full ${
-                        member.plan === 'platinum' ? 'bg-purple-100 text-purple-800' :
+                        member.plan.includes('platinum') ? 'bg-purple-100 text-purple-800' :
                         member.plan === 'business' ? 'bg-blue-100 text-blue-800' :
                         'bg-green-100 text-green-800'
                       }`}>
-                        {member.plan.toUpperCase()}
+                        {member.plan.toUpperCase().replace('_', ' ')}
                       </span>
                     )}
                   </div>

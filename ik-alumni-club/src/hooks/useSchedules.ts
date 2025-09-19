@@ -158,7 +158,7 @@ export const useScheduleMutations = () => {
       setError(null);
       const author = {
         id: user.uid,
-        name: member.displayName || 'Unknown',
+        name: `${member.lastName} ${member.firstName}` || 'Unknown',
         role: member.role || 'member',
       };
       const id = await createSchedule(data, author);

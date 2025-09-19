@@ -24,6 +24,7 @@ const scheduleData = [
   // 今月のイベント（公開済み）
   {
     title: '春の定期公演「COLORS」',
+    imageUrl: 'https://example.com/images/spring-concert-2025.jpg',
     content: `<h3>IK ALUMNI CGT 春の定期公演開催決定！</h3>
 <p>今年のテーマは「COLORS」。メンバー一人ひとりの個性を色で表現し、美しいハーモニーを織りなします。</p>
 
@@ -46,6 +47,7 @@ const scheduleData = [
   },
   {
     title: 'メンバー募集説明会',
+    imageUrl: 'https://example.com/images/recruitment-2025.jpg',
     content: `<h3>2025年度 新メンバー募集説明会のお知らせ</h3>
 <p>IK ALUMNI CGTでは、共に舞台を創り上げる新しい仲間を募集しています。</p>
 
@@ -75,6 +77,7 @@ const scheduleData = [
   },
   {
     title: '創立記念パーティー',
+    imageUrl: 'https://example.com/images/anniversary-party.jpg',
     content: `<h3>IK ALUMNI CGT 創立5周年記念パーティー</h3>
 <p>おかげさまで、IK ALUMNI CGTは創立5周年を迎えることができました。これまでの感謝を込めて、記念パーティーを開催いたします。</p>
 
