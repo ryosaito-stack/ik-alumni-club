@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { useInformationMutations } from '@/hooks/useInformations';
-import { InformationFormData } from '@/types';
+import { InformationFormData } from '@/types/information';
 import { uploadImage, validateImageFile, createImagePreview, revokeImagePreview } from '@/lib/storage';
 
 export default function NewInformationPage() {

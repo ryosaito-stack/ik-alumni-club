@@ -1,88 +1,36 @@
 import { useState, useEffect, useCallback } from 'react';
-import { onSnapshot, collection, query, where, orderBy, limit as firestoreLimit } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import {
   Information,
   InformationFormData,
   InformationQueryOptions,
-} from '@/types';
-import {
-  createInformation as createInformationFirestore,
-  getInformation as getInformationFirestore,
-  updateInformation as updateInformationFirestore,
-  deleteInformation as deleteInformationFirestore,
-  getInformations as getInformationsFirestore,
-} from '@/lib/firestore/informations';
+} from '@/types/information';
+import { getPublishedInformations, getInformation } from '@/lib/firestore/informations/user';
+import * as admin from '@/lib/firestore/informations/admin';
 
-// お知らせ一覧を取得するフック（リアルタイム更新対応）
+// お知らせ一覧を取得するフック
 export const useInformations = (options: InformationQueryOptions = {}) => {
   const [informations, setInformations] = useState<Information[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    setLoading(true);
-    setError(null);
-
-    // Firestoreクエリの構築
-    const constraints = [];
-    
-    // ソート（単一フィールドのみ使用してインデックス不要に）
-    const orderField = options.orderBy || 'date';
-    const orderDirection = options.orderDirection || 'desc';
-    constraints.push(orderBy(orderField, orderDirection));
-
-    // リミット（多めに取得してクライアント側でフィルタリング）
-    if (options.limit && !options.published) {
-      constraints.push(firestoreLimit(options.limit));
-    } else if (options.limit) {
-      // publishedフィルターがある場合は多めに取得
-      constraints.push(firestoreLimit(options.limit * 3));
-    }
-
-    const q = query(collection(db, 'informations'), ...constraints);
-
-    // リアルタイムリスナーの設定
-    const unsubscribe = onSnapshot(
-      q,
-      (snapshot) => {
-        const informationsList: Information[] = [];
-        snapshot.forEach((doc) => {
-          const data = doc.data();
-          // publishedフィルターをクライアント側で適用
-          if (options.published === undefined || data.published === options.published) {
-            informationsList.push({
-              id: doc.id,
-              title: data.title || '',
-              date: data.date?.toDate() || new Date(),
-              content: data.content || '',
-              imageUrl: data.imageUrl,
-              url: data.url,
-              published: data.published || false,
-              createdAt: data.createdAt?.toDate() || new Date(),
-              updatedAt: data.updatedAt?.toDate() || new Date(),
-            });
-          }
-        });
-
-        // limitをクライアント側で適用
-        const limitedList = options.limit && options.published !== undefined
-          ? informationsList.slice(0, options.limit)
-          : informationsList;
-
-        setInformations(limitedList);
-        setLoading(false);
-      },
-      (err) => {
+    const fetchInformations = async () => {
+      setLoading(true);
+      setError(null);
+      
+      try {
+        const data = await getPublishedInformations(options);
+        setInformations(data);
+      } catch (err) {
         console.error('Error fetching informations:', err);
         setError(err as Error);
+      } finally {
         setLoading(false);
       }
-    );
+    };
 
-    // クリーンアップ
-    return () => unsubscribe();
+    fetchInformations();
   }, [
     options.published,
     options.limit,
@@ -119,7 +67,7 @@ export const useInformation = (id: string) => {
       setError(null);
       
       try {
-        const result = await getInformationFirestore(id);
+        const result = await getInformation(id);
         setInformation(result);
       } catch (err) {
         console.error('Error fetching information:', err);
@@ -147,11 +95,16 @@ export const useInformationMutations = () => {
       return null;
     }
 
+    if (member.role !== 'admin') {
+      setError(new Error('管理者権限が必要です'));
+      return null;
+    }
+
     setLoading(true);
     setError(null);
 
     try {
-      const id = await createInformationFirestore(formData);
+      const id = await admin.createInformation(formData);
       setLoading(false);
       return id;
     } catch (err) {
@@ -168,11 +121,16 @@ export const useInformationMutations = () => {
       return false;
     }
 
+    if (member.role !== 'admin') {
+      setError(new Error('管理者権限が必要です'));
+      return false;
+    }
+
     setLoading(true);
     setError(null);
 
     try {
-      await updateInformationFirestore(id, formData);
+      await admin.updateInformation(id, formData);
       setLoading(false);
       return true;
     } catch (err) {
@@ -189,11 +147,16 @@ export const useInformationMutations = () => {
       return false;
     }
 
+    if (member.role !== 'admin') {
+      setError(new Error('管理者権限が必要です'));
+      return false;
+    }
+
     setLoading(true);
     setError(null);
 
     try {
-      await deleteInformationFirestore(id);
+      await admin.deleteInformation(id);
       setLoading(false);
       return true;
     } catch (err) {

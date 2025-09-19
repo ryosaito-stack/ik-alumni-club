@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useInformations, useInformationMutations } from '@/hooks/useInformations';
-import { Information } from '@/types';
 
 export default function AdminInformationsPage() {
   const router = useRouter();
