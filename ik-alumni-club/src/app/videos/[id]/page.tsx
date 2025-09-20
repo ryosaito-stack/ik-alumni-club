@@ -3,7 +3,7 @@
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import DetailLayout from '@/components/DetailLayout';
-import { useVideo } from '@/hooks/useVideos';
+import { useVideo } from '@/hooks/videos/user';
 
 // YouTube URLを埋め込み用URLに変換
 function getEmbedUrl(url: string): string | null {

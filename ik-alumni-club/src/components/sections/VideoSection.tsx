@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Section from '@/components/Section';
 import { useScrollAnimation } from '@/hooks/useScrollAnimation';
-import { useLatestVideos } from '@/hooks/useVideos';
+import { useLatestVideos } from '@/hooks/videos/user';
 
 
 export default function VideoSection() {

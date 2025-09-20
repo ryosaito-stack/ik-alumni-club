@@ -123,12 +123,6 @@ export interface PlanInfo {
   isBusinessPlan?: boolean;  // 法人プランかどうか
 }
 
-// ===== VIDEO関連の型定義 =====
-
-// Use common Author type for Video
-export type { Video, VideoFormData, VideoQueryOptions } from './video';
-export type VideoAuthor = Author;
-
 // ===== NEWSLETTER関連の型定義 =====
 
 // Newsletter data

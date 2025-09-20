@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import { useVideos, useVideoMutations } from '@/hooks/useVideos';
+import { useVideos, useVideoMutations } from '@/hooks/videos/admin';
 
 export default function AdminVideosPage() {
   const router = useRouter();

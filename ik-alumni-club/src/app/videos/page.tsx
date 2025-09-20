@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import ViewAllLayout from '@/components/ViewAllLayout';
 import ListPageContent from '@/components/ListPageContent';
-import { usePublishedVideos } from '@/hooks/useVideos';
+import { usePublishedVideos } from '@/hooks/videos/user';
 
 export default function VideosPage() {
   // Firestoreから公開済み動画を取得

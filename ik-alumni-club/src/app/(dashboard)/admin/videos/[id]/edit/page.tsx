@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
-import { useVideo, useVideoMutations } from '@/hooks/useVideos';
-import { VideoFormData } from '@/types';
+import { useVideo, useVideoMutations } from '@/hooks/videos/admin';
+import { VideoFormData } from '@/types/video';
 import { uploadImage, deleteImage, validateImageFile, createImagePreview, revokeImagePreview } from '@/lib/storage';
 
 export default function EditVideoPage() {
