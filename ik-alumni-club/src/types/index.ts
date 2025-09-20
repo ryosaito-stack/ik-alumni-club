@@ -37,12 +37,11 @@ export interface Member {
 
 // ===== BLOG関連の型定義 =====
 
-// Blog author
-export interface BlogAuthor {
-  id: string;
-  name: string;
-  role: string;
-}
+// Import common Author type
+import type { Author } from './author';
+
+// Use common Author type for Blog
+export type BlogAuthor = Author;
 
 // Blog data
 export interface Blog {
@@ -52,7 +51,7 @@ export interface Blog {
   content: string;            // HTML形式の本文
   thumbnail: string;          // サムネイル画像URL
   published: boolean;         // 公開状態
-  author: BlogAuthor;         // 作成者情報
+  author: Author;         // 作成者情報
   createdAt: Date;           // 作成日時
   updatedAt: Date;           // 更新日時
 }
@@ -124,59 +123,10 @@ export interface PlanInfo {
   isBusinessPlan?: boolean;  // 法人プランかどうか
 }
 
-// ===== SCHEDULE関連の型定義 =====
-
-// Schedule author
-export interface ScheduleAuthor {
-  id: string;
-  name: string;
-  role: string;
-}
-
-// Schedule data
-export interface Schedule {
-  id: string;
-  title: string;
-  content: string;
-  date: Date;
-  imageUrl?: string;        // 画像URL（任意）
-  link?: string;
-  sortOrder?: number;
-  published: boolean;
-  author: ScheduleAuthor;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-// Schedule form data
-export interface ScheduleFormData {
-  title: string;
-  content: string;
-  date: Date;
-  imageUrl?: string;
-  link?: string;
-  sortOrder?: number;
-  published: boolean;
-}
-
-// Query options for fetching Schedule
-export interface ScheduleQueryOptions {
-  published?: boolean;
-  startDate?: Date;
-  endDate?: Date;
-  limit?: number;
-  orderBy?: 'date' | 'sortOrder' | 'createdAt' | 'updatedAt';
-  orderDirection?: 'asc' | 'desc';
-}
-
 // ===== VIDEO関連の型定義 =====
 
-// Video author
-export interface VideoAuthor {
-  id: string;
-  name: string;
-  role: string;
-}
+// Use common Author type for Video
+export type VideoAuthor = Author;
 
 // Video data
 export interface Video {
@@ -186,7 +136,7 @@ export interface Video {
   videoUrl: string;           // 動画URL（必須）
   thumbnail: string;          // サムネイル画像（必須）
   published: boolean;         // 公開状態
-  author: VideoAuthor;        // 作成者情報
+  author: Author;        // 作成者情報
   createdAt: Date;           // 作成日時
   updatedAt: Date;           // 更新日時
 }

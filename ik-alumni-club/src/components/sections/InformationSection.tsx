@@ -42,7 +42,7 @@ export default function InformationSection() {
     <Section
       id="information"
       title="INFORMATION"
-      viewAllLink="/news"
+      viewAllLink="/informations"
     >
       <div className="space-y-8">
         {loading ? (

@@ -26,7 +26,7 @@ export default function NewsDetailPage() {
         title="読み込み中..."
         date=""
         showShareButtons={false}
-        backLink="/news"
+        backLink="/information"
         backText="BACK"
       >
         <div className="text-center py-8 text-gray-500">
@@ -42,7 +42,7 @@ export default function NewsDetailPage() {
         title="お知らせが見つかりません"
         date=""
         showShareButtons={false}
-        backLink="/news"
+        backLink="/information"
         backText="BACK"
       >
         <div className="text-center py-8 text-gray-500">
@@ -57,7 +57,7 @@ export default function NewsDetailPage() {
       title={information.title}
       date={formatDate(information.date)}
       showShareButtons={true}
-      backLink="/news"
+      backLink="/information"
       backText="BACK"
     >
       {/* 画像がある場合は表示 */}

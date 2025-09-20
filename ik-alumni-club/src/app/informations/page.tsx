@@ -42,7 +42,7 @@ export default function NewsPage() {
         layout="list"
       >
         {(item) => (
-          <Link href={`/news/${item.id}`}>
+          <Link href={`/informations/${item.id}`}>
             <div className="block--txt transition-opacity duration-300 cursor-pointer hover:opacity-60" style={{ paddingTop: '15px', paddingBottom: '15px', paddingLeft: '0', paddingRight: '0' }}>
               <p className="date text-black" style={{ fontSize: '13px', marginBottom: '10px' }}>
                 {formatDate(item.date)}
@@ -60,7 +60,7 @@ export default function NewsPage() {
         currentPage={currentPage}
         totalPages={totalPages}
         onPageChange={handlePageChange}
-        basePath="/news"
+        basePath="/information"
       />
     </ViewAllLayout>
   );

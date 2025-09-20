@@ -85,7 +85,7 @@ export default function Header({ transparent = false }: HeaderProps) {
                 <Link href="/" className={`transition-colors font-3d flex items-center h-full ${textColor.nav}`}>
                   HOME
                 </Link>
-                <Link href="/news" className={`transition-colors font-3d flex items-center h-full ${textColor.nav}`}>
+                <Link href="/informations" className={`transition-colors font-3d flex items-center h-full ${textColor.nav}`}>
                   INFORMATION
                 </Link>
                 <Link href="/events" className={`transition-colors font-3d flex items-center h-full ${textColor.nav}`}>
@@ -220,7 +220,7 @@ export default function Header({ transparent = false }: HeaderProps) {
           <div className="p-8 pt-24">
             <nav className="space-y-6">
               <Link href="/" className="block text-xl font-semibold text-gray-700 font-3d">HOME</Link>
-              <Link href="/news" className="block text-xl font-semibold text-gray-700 font-3d">INFORMATION</Link>
+              <Link href="/informations" className="block text-xl font-semibold text-gray-700 font-3d">INFORMATION</Link>
               <Link href="/events" className="block text-xl font-semibold text-gray-700 font-3d">SCHEDULE</Link>
               <Link href="/videos" className="block text-xl font-semibold text-gray-700 font-3d">VIDEO</Link>
               <Link href="/blog" className="block text-xl font-semibold text-gray-700 font-3d">BLOG</Link>

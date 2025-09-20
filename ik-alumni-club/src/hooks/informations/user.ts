@@ -128,3 +128,9 @@ export const userInformationsCacheUtils = {
     singleCache.debug();
   },
 };
+
+// 互換性保持のためのエイリアス（既存コード対応）
+export const useInformations = () => useInformationsList();
+export const useAvailableInformations = (options: { limit?: number } = {}) => 
+  useInformationsList(options.limit);
+export const useInformation = (id: string) => useInformationDetail(id);
