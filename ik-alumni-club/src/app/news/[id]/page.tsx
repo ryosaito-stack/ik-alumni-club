@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { useInformation } from '@/hooks/useInformations';
+import { useInformation } from '@/hooks/informations/user';
 import DetailLayout from '@/components/DetailLayout';
 
 export default function NewsDetailPage() {

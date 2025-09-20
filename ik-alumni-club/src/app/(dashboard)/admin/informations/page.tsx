@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import { useInformations, useInformationMutations } from '@/hooks/useInformations';
+import { useInformations, useInformationMutations } from '@/hooks/informations/admin';
 
 export default function AdminInformationsPage() {
   const router = useRouter();

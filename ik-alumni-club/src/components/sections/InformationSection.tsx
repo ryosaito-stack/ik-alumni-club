@@ -2,15 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import Section from '@/components/Section';
-import { useAvailableInformations } from '@/hooks/useInformations';
+import { useAvailableInformations } from '@/hooks/informations/user';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function InformationSection() {
   const { member } = useAuth();
   const { informations, loading, error } = useAvailableInformations({
     limit: 3,
-    orderBy: 'date',
-    orderDirection: 'desc',
   });
 
   // デバッグ用ログ

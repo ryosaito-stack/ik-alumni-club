@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
-import { useInformationMutations } from '@/hooks/useInformations';
+import { useInformationMutations } from '@/hooks/informations/admin';
 import { InformationFormData } from '@/types/information';
 import { uploadImage, validateImageFile, createImagePreview, revokeImagePreview } from '@/lib/storage';
 

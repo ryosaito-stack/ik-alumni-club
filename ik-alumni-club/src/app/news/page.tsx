@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { useAvailableInformations } from '@/hooks/useInformations';
+import { useAvailableInformations } from '@/hooks/informations/user';
 import ViewAllLayout from '@/components/ViewAllLayout';
 import ListPageContent from '@/components/ListPageContent';
 import Pagination from '@/components/Pagination';
@@ -13,10 +13,7 @@ export default function NewsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   
   // Firestoreからお知らせを取得
-  const { informations, loading } = useAvailableInformations({
-    orderBy: 'date',
-    orderDirection: 'desc',
-  });
+  const { informations, loading } = useAvailableInformations();
   
   const totalPages = Math.ceil(informations.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
