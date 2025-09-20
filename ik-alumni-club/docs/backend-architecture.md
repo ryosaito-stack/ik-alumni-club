@@ -132,13 +132,24 @@ export const convertToFirestoreData = (formData: InformationFormData) => {
 ```
 
 #### base.ts（基本CRUD操作）
-権限チェックを行わない基本的なデータアクセス機能を提供
+権限チェックを行わない基本的なデータアクセス機能を提供。
+**BaseRepositoryクラスを使用して共通化**
 ```typescript
-// 一覧取得（権限チェックなし）
-export const getInformations = async (options: InformationQueryOptions = {}): Promise<Information[]>
+// BaseRepositoryのインスタンス化
+const repository = new BaseRepository<Schedule>(
+  COLLECTION_NAME,
+  convertToSchedule
+);
+
+// 全件取得（フィルタリングなし）
+export const getSchedules = async (): Promise<Schedule[]> => {
+  return repository.getAll();
+};
 
 // 詳細取得（権限チェックなし）
-export const getInformationById = async (id: string): Promise<Information | null>
+export const getScheduleById = async (id: string): Promise<Schedule | null> => {
+  return repository.getById(id);
+};
 ```
 
 #### user.ts（一般ユーザー用）
@@ -221,6 +232,34 @@ export const useAdminInformationMutations = () => {
 - **権限分離**: user/adminで独立したキャッシュ
 - **効率的なデータ取得**: 一覧キャッシュを優先活用
 
+## 🔧 共通基盤クラス
+
+### BaseRepository（2025-09-20追加）
+全コレクションで共通の基本データアクセスロジックを提供
+
+```typescript
+// /src/lib/firestore/base-repository.ts
+export class BaseRepository<T> {
+  constructor(
+    private collectionName: string,
+    private converter: (id: string, data: DocumentData) => T
+  ) {}
+
+  async getAll(): Promise<T[]> {
+    // 全件取得の共通ロジック
+  }
+
+  async getById(id: string): Promise<T | null> {
+    // ID指定取得の共通ロジック
+  }
+}
+```
+
+**メリット：**
+- コードの重複を削減
+- 一貫性のあるエラーハンドリング
+- 保守性の向上
+
 ## 🚀 特徴的な設計パターン
 
 ### 1. 多層キャッシュシステム
@@ -259,6 +298,14 @@ export const filterPublished = <T>(items: T[]): T[]
 export const isPublished = <T>(item: T | null): T | null
 ```
 
+### 5. フィルタリングの分離（推奨）
+```typescript
+// /src/lib/firestore/[feature]/filters.ts
+export const filterByDateRange = (items: T[], start?: Date, end?: Date): T[]
+export const sortItems = (items: T[], orderBy: string, direction: 'asc' | 'desc'): T[]
+export const applyFilters = (items: T[], options: QueryOptions): T[]
+```
+
 ## 📝 新機能追加ガイドライン
 
 ### 新しいコレクションを追加する場合
@@ -274,11 +321,12 @@ export const isPublished = <T>(item: T | null): T | null
 2. **Firestoreレイヤー**
    ```
    /src/lib/firestore/[feature]/
-   ├── constants.ts
-   ├── converter.ts
-   ├── base.ts
-   ├── user.ts
-   └── admin.ts
+   ├── constants.ts    # 共通インポート・定数
+   ├── converter.ts    # 型変換ロジック
+   ├── base.ts        # BaseRepository使用の基本操作
+   ├── filters.ts     # フィルタリングロジック（推奨）
+   ├── user.ts        # 公開データアクセス
+   └── admin.ts       # 管理者CRUD操作
    ```
 
 3. **Hooksレイヤー**
@@ -347,5 +395,10 @@ clearAllGlobalCaches();
 - [プロジェクト概要](../CLAUDE.md)
 
 ---
+
+## 📝 更新履歴
+
+- **2025-09-20**: BaseRepositoryクラスを追加し、基本データアクセスを共通化
+- **2025-09-20**: フィルタリングロジックの分離を推奨設計として追加
 
 最終更新: 2025-09-20

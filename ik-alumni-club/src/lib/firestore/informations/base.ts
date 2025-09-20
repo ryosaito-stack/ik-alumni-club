@@ -1,66 +1,19 @@
-import { 
-    COLLECTION_NAME, 
-    collection,
-    orderBy,
-    limit,
-    query,
-    db,
-    getDocs,
-    doc,
-    getDoc,
-    QueryConstraint,
-    type Information,
-    type InformationQueryOptions
+import { COLLECTION_NAME, type Information } from './constants';
+import { convertToInformation } from '@/lib/firestore/informations/converter';
+import { BaseRepository } from '../base-repository';
 
-} from './constants';
-import { convertToInformation } from '@/lib/firestore/informations/converter'
+// BaseRepositoryのインスタンスを作成
+const repository = new BaseRepository<Information>(
+  COLLECTION_NAME,
+  convertToInformation
+);
 
-// お知らせ一覧を取得（基本実装）
-  export const getInformations = async (
-    options: InformationQueryOptions = {}
-  ): Promise<Information[]> => {
-    try {
-      const constraints: QueryConstraint[] = [];
-
-      // ソート
-      const orderField = options.orderBy || 'date';
-      const orderDirection = options.orderDirection || 'desc';
-      constraints.push(orderBy(orderField, orderDirection));
-
-      // リミット
-      if (options.limit) {
-        constraints.push(limit(options.limit));
-      }
-
-      const q = query(collection(db, COLLECTION_NAME), ...constraints);
-      const querySnapshot = await getDocs(q);
-
-      const informations: Information[] = [];
-      querySnapshot.forEach((doc) => {
-        informations.push(convertToInformation(doc.id, doc.data()));
-      });
-
-      return informations;
-    } catch (error) {
-      console.error('Error getting informations:', error);
-      throw error;
-    }
-  };
+// 全件取得（フィルタリングなし、純粋なデータ取得）
+export const getInformations = async (): Promise<Information[]> => {
+  return repository.getAll();
+};
 
 // お知らせを1件取得（公開チェックなし）
 export const getInformationById = async (id: string): Promise<Information | null> => {
-  try {
-    const docRef = doc(db, COLLECTION_NAME, id);
-    const docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) {
-      return convertToInformation(docSnap.id, docSnap.data());
-    } else {
-      console.log('No such information!');
-      return null;
-    }
-  } catch (error) {
-    console.error('Error getting information:', error);
-    throw error;
-  }
+  return repository.getById(id);
 };
