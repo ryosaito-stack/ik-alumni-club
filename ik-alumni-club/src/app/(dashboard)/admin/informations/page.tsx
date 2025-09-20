@@ -17,7 +17,7 @@ export default function AdminInformationsPage() {
   // お知らせ一覧を取得（管理画面なので全て取得）
   const { informations, loading, error } = useAdminInformationsList(showUnpublished);
 
-  const { deleteInformation, loading: deleteLoading } = useAdminInformationMutations();
+  const { delete: deleteInformation, loading: deleteLoading } = useAdminInformationMutations();
 
   useEffect(() => {
     // 認証情報の読み込みが完了してから判定

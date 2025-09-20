@@ -15,7 +15,7 @@ export default function EditSchedulePage() {
   
   const { member } = useAuth();
   const { schedule, loading: loadingSchedule } = useAdminScheduleDetail(id);
-  const { updateSchedule, loading: updating, error } = useAdminScheduleMutations();
+  const { update: updateSchedule, loading: updating, error } = useAdminScheduleMutations();
 
   // 管理者チェック
   const isAdmin = member?.role === 'admin';

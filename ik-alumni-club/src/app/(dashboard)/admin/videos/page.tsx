@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import { useVideos, useVideoMutations } from '@/hooks/videos/admin';
+import { useAdminVideosList, useAdminVideoMutations } from '@/hooks/videos/admin';
 
 export default function AdminVideosPage() {
   const router = useRouter();
@@ -15,14 +15,14 @@ export default function AdminVideosPage() {
   const isAdmin = member?.role === 'admin';
 
   // 動画一覧を取得
-  const { videos, loading } = useVideos({
+  const { videos, loading } = useAdminVideosList({
     published: showUnpublished ? undefined : true,
     orderBy: 'date',
     orderDirection: 'desc',
   });
 
   // 削除用のMutation
-  const { deleteVideo, loading: deleting } = useVideoMutations();
+  const { delete: deleteVideo, loading: deleting } = useAdminVideoMutations();
 
   useEffect(() => {
     if (member && !isAdmin) {

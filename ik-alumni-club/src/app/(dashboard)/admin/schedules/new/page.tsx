@@ -11,7 +11,7 @@ import { uploadImage, validateImageFile, createImagePreview, revokeImagePreview 
 export default function NewSchedulePage() {
   const router = useRouter();
   const { member } = useAuth();
-  const { createSchedule, loading, error } = useAdminScheduleMutations();
+  const { create: createSchedule, loading, error } = useAdminScheduleMutations();
 
   // 管理者チェック
   const isAdmin = member?.role === 'admin';

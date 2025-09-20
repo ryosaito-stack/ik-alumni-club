@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import { useBlogs, useBlogMutations } from '@/hooks/useBlogs';
+import { useAdminBlogsList, useBlogMutations } from '@/hooks/blogs/admin';
 
 export default function AdminBlogsPage() {
   const router = useRouter();
@@ -15,14 +15,14 @@ export default function AdminBlogsPage() {
   const isAdmin = member?.role === 'admin';
 
   // ブログ一覧を取得
-  const { blogs, loading } = useBlogs({
+  const { blogs, loading } = useAdminBlogsList({
     published: showUnpublished ? undefined : true,
     orderBy: 'createdAt',
     orderDirection: 'desc',
   });
 
   // 削除用のMutation
-  const { deleteBlog, loading: deleting } = useBlogMutations();
+  const { delete: deleteBlog, loading: deleting } = useBlogMutations();
 
   useEffect(() => {
     if (member && !isAdmin) {

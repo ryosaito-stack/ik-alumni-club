@@ -32,7 +32,7 @@ export const useAdminNewsletterDetail = (id: string | null) => {
 
 // 管理者向けCRUD操作フック
 export const useAdminNewsletterMutations = () => {
-  const { create, update, deleteItem, loading, error } = adminNewslettersHooks.useMutations();
+  const mutations = adminNewslettersHooks.useMutations();
   
   // 最新号数を自動設定する拡張create関数
   const createWithLatestIssue = async (formData: NewsletterFormData, author?: Author) => {
@@ -41,14 +41,11 @@ export const useAdminNewsletterMutations = () => {
       const latestIssue = await newslettersAdminApi.getLatestIssueNumber();
       formData.issueNumber = latestIssue + 1;
     }
-    return create(formData, author);
+    return mutations.create(formData, author);
   };
   
   return {
-    createNewsletter: createWithLatestIssue,
-    updateNewsletter: update,
-    deleteNewsletter: deleteItem,
-    loading,
-    error,
+    ...mutations,
+    create: createWithLatestIssue, // createのみ拡張版で上書き
   };
 };

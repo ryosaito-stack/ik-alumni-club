@@ -8,11 +8,15 @@ import InformationSection from '@/components/sections/InformationSection';
 import ScheduleSection from '@/components/sections/ScheduleSection';
 import VideoSection from '@/components/sections/VideoSection';
 import ContentGridSection from '@/components/sections/ContentGridSection';
-import { useLatestBlogs } from '@/hooks/useBlogs';
+import { useBlogsList } from '@/hooks/blogs/user';
 import { useNewslettersList } from '@/hooks/newsletters/user';
 
 export default function LandingPage() {
-  const { blogs: blogArticles, loading: blogLoading } = useLatestBlogs(3);
+  const { blogs: blogArticles, loading: blogLoading } = useBlogsList({ 
+    limit: 3,
+    orderBy: 'createdAt',
+    orderDirection: 'desc'
+  });
   const { newsletters, loading: newslettersLoading } = useNewslettersList({ limit: 3 });
 
   return (

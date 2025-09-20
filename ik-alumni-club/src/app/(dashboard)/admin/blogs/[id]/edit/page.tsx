@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
-import { useBlog, useBlogMutations } from '@/hooks/useBlogs';
-import { BlogFormData } from '@/types';
+import { useAdminBlogDetail, useBlogMutations } from '@/hooks/blogs/admin';
+import { BlogFormData } from '@/types/blog';
 import { uploadImage, deleteImage, validateImageFile, createImagePreview, revokeImagePreview } from '@/lib/storage';
 
 export default function EditBlogPage() {
@@ -14,8 +14,8 @@ export default function EditBlogPage() {
   const id = params?.id as string;
   
   const { member } = useAuth();
-  const { blog, loading: loadingBlog } = useBlog(id);
-  const { updateBlog, loading: updating, error } = useBlogMutations();
+  const { blog, loading: loadingBlog } = useAdminBlogDetail(id);
+  const { update: updateBlog, loading: updating, error } = useBlogMutations();
 
   // 管理者チェック
   const isAdmin = member?.role === 'admin';

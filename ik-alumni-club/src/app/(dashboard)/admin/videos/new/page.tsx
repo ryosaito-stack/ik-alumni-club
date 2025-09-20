@@ -4,14 +4,14 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
-import { useVideoMutations } from '@/hooks/videos/admin';
+import { useAdminVideoMutations } from '@/hooks/videos/admin';
 import { VideoFormData } from '@/types/video';
 import { uploadImage, validateImageFile, createImagePreview, revokeImagePreview } from '@/lib/storage';
 
 export default function NewVideoPage() {
   const router = useRouter();
   const { member } = useAuth();
-  const { createVideo, loading, error } = useVideoMutations();
+  const { create: createVideo, loading, error } = useAdminVideoMutations();
 
   // 管理者チェック
   const isAdmin = member?.role === 'admin';

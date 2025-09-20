@@ -22,7 +22,7 @@ export default function AdminNewslettersPage() {
   });
 
   // 削除用のMutation
-  const { deleteNewsletter, loading: deleting } = useAdminNewsletterMutations();
+  const { delete: deleteNewsletter, loading: deleting } = useAdminNewsletterMutations();
 
   useEffect(() => {
     if (member && !isAdmin) {

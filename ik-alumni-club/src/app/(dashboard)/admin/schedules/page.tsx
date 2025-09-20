@@ -23,7 +23,7 @@ export default function AdminSchedulesPage() {
     orderDirection: 'asc',
   });
 
-  const { deleteSchedule: deleteScheduleHandler, loading: deleteLoading } = useAdminScheduleMutations();
+  const { delete: deleteScheduleHandler, loading: deleteLoading } = useAdminScheduleMutations();
 
   useEffect(() => {
     // 認証情報の読み込みが完了してから判定

@@ -10,7 +10,7 @@ import { uploadImage, validateImageFile } from '@/lib/storage';
 export default function NewNewsletterPage() {
   const router = useRouter();
   const { member } = useAuth();
-  const { createNewsletter, loading, error } = useAdminNewsletterMutations();
+  const { create: createNewsletter, loading, error } = useAdminNewsletterMutations();
 
   // 管理者チェック
   const isAdmin = member?.role === 'admin';

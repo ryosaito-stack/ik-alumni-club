@@ -36,42 +36,8 @@ export interface Member {
 }
 
 // ===== BLOG関連の型定義 =====
-
-// Import common Author type
-import type { Author } from './author';
-
-// Use common Author type for Blog
-export type BlogAuthor = Author;
-
-// Blog data
-export interface Blog {
-  id: string;
-  title: string;              // タイトル
-  excerpt: string;            // 記事の概要
-  content: string;            // HTML形式の本文
-  thumbnail: string;          // サムネイル画像URL
-  published: boolean;         // 公開状態
-  author: Author;         // 作成者情報
-  createdAt: Date;           // 作成日時
-  updatedAt: Date;           // 更新日時
-}
-
-// Blog form data
-export interface BlogFormData {
-  title: string;
-  excerpt: string;
-  content: string;
-  thumbnail: string;
-  published: boolean;
-}
-
-// Query options for fetching Blog
-export interface BlogQueryOptions {
-  published?: boolean;
-  limit?: number;
-  orderBy?: 'createdAt' | 'updatedAt';
-  orderDirection?: 'asc' | 'desc';
-}
+// Blog型定義は独立ファイルに移動
+export * from './blog';
 
 // BlogCategory型も削除されたため、Contentインターフェースからも参照を削除
 // Content types (Legacy - 削除予定)

@@ -14,7 +14,7 @@ export default function EditNewsletterPage() {
   
   const { member } = useAuth();
   const { newsletter, loading: loadingNewsletter } = useNewsletter(id);
-  const { updateNewsletter, loading: updating, error } = useAdminNewsletterMutations();
+  const { update: updateNewsletter, loading: updating, error } = useAdminNewsletterMutations();
 
   // 管理者チェック
   const isAdmin = member?.role === 'admin';

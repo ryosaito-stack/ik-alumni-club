@@ -15,7 +15,7 @@ export default function EditInformationPage() {
   
   const { member } = useAuth();
   const { information, loading: loadingInfo } = useAdminInformationDetail(id);
-  const { updateInformation, loading: updating, error } = useAdminInformationMutations();
+  const { update, loading: updating, error } = useAdminInformationMutations();
 
   // 管理者チェック
   const isAdmin = member?.role === 'admin';
@@ -143,7 +143,7 @@ export default function EditInformationPage() {
       }
     }
 
-    const success = await updateInformation(id, {
+    const success = await update(id, {
       ...formData,
       imageUrl: uploadedImageUrl,
     });

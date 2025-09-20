@@ -183,21 +183,57 @@ export class BaseAdminHooks<T, FormData, QueryOptions> {
 }
 ```
 
-### 実装例（驚くほどシンプル！）
+### 実装パターン
+
+#### ✅ 正しい実装（シンプルで明確）
 
 ```typescript
-// /src/hooks/schedules/user.ts
-const schedulesHooks = new BaseUserHooks<Schedule, ScheduleQueryOptions>({
-  getList: schedulesApi.getPublishedSchedules,
-  getById: schedulesApi.getSchedule,
-  getCacheKey: (options) => JSON.stringify(options || {}),
-  cachePrefix: 'schedules_user',
-});
+// /src/hooks/blogs/admin.ts
+export const useAdminBlogMutations = () => {
+  return blogsAdminHooks.useMutations();  // 直接返す！
+};
 
-// たった1行でフル機能のフックを作成！
-export const useSchedulesList = (options = {}) => {
-  const { items: schedules, loading, error, refresh } = schedulesHooks.useList(options);
-  return { schedules, loading, error, refresh };
+// コンポーネント側
+const { create, update, delete: deleteBlog } = useAdminBlogMutations();
+// 'delete'は予約語なので、必要に応じてリネーム
+```
+
+#### ❌ アンチパターン（冗長で不要）
+
+```typescript
+// 悪い例：名前を変えるだけの冗長な実装
+export const useAdminBlogMutations = () => {
+  const { create, update, delete: deleteBlog } = blogsAdminHooks.useMutations();
+  return {
+    createBlog: create,  // 不要な名前変更
+    updateBlog: update,  // 不要な名前変更
+    deleteBlog,
+    loading,
+    error,
+  };
+};
+```
+
+#### 🔧 特殊ケース（機能拡張が必要な場合）
+
+```typescript
+// /src/hooks/newsletters/admin.ts
+export const useAdminNewsletterMutations = () => {
+  const mutations = adminNewslettersHooks.useMutations();
+  
+  // 機能拡張：号数の自動設定
+  const createWithLatestIssue = async (formData, author) => {
+    if (!formData.issueNumber) {
+      const latestIssue = await getLatestIssueNumber();
+      formData.issueNumber = latestIssue + 1;
+    }
+    return mutations.create(formData, author);
+  };
+  
+  return {
+    ...mutations,
+    create: createWithLatestIssue,  // createのみ拡張版で上書き
+  };
 };
 ```
 
@@ -237,15 +273,21 @@ clearAllGlobalCaches();
 
 ## 📊 実装成果（コード削減率）
 
-### 共通基盤導入による効果
+### 共通基盤導入による効果（2025-09-21更新）
 
 | 機能 | 元のコード行数 | リファクタ後 | 削減率 |
 |------|-------------|-----------|--------|
-| informations admin hooks | 227行 | 59行 | **74%削減** |
-| schedules admin hooks | 161行 | 49行 | **70%削減** |
+| informations admin hooks | 227行 | 51行 | **78%削減** |
+| schedules admin hooks | 161行 | 45行 | **72%削減** |
+| videos admin hooks | 195行 | 81行 | **58%削減** |
+| newsletters admin hooks | 178行 | 51行 | **71%削減** |
+| blogs admin hooks | 181行 | 59行 | **67%削減** |
 | informations user hooks | 130行 | 44行 | **66%削減** |
 | schedules user hooks | 154行 | 51行 | **67%削減** |
-| **合計** | **672行** | **203行** | **70%削減** |
+| videos user hooks | 145行 | 65行 | **55%削減** |
+| newsletters user hooks | 138行 | 48行 | **65%削減** |
+| blogs user hooks | 181行 | 36行 | **80%削減** |
+| **合計** | **1690行** | **531行** | **69%削減** |
 
 ### メリット
 - **保守性**: バグ修正・機能追加が1箇所で完結
@@ -284,6 +326,8 @@ export const getVideoById = (id) => repository.getById(id);
 ```
 
 #### 3. Hooks層（3分）
+
+##### ユーザー向けフック
 ```typescript
 // /src/hooks/videos/user.ts
 const videosHooks = new BaseUserHooks<Video, VideoQueryOptions>({
@@ -296,6 +340,25 @@ const videosHooks = new BaseUserHooks<Video, VideoQueryOptions>({
 export const useVideosList = (options = {}) => {
   const { items: videos, loading, error, refresh } = videosHooks.useList(options);
   return { videos, loading, error, refresh };
+};
+```
+
+##### 管理者向けフック（シンプルな実装）
+```typescript
+// /src/hooks/videos/admin.ts
+const videosAdminHooks = new BaseAdminHooks<Video, VideoFormData, VideoQueryOptions>({
+  getAll: videosApi.getAllVideos,
+  getById: videosApi.getVideo,
+  create: videosApi.createVideo,
+  update: videosApi.updateVideo,
+  delete: videosApi.deleteVideo,
+  getCacheKey: (options) => JSON.stringify(options || {}),
+  cachePrefix: 'videos_admin',
+});
+
+// Mutations フックは直接返すだけ（冗長な名前変更は不要）
+export const useAdminVideoMutations = () => {
+  return videosAdminHooks.useMutations();
 };
 ```
 
@@ -366,12 +429,31 @@ console.log(`ヒット率: ${(info.stats.hitRate * 100).toFixed(1)}%`);
 
 ---
 
+## 💡 ベストプラクティス
+
+### コード品質チェックリスト
+- [ ] BaseAdminHooksのuseMutations()を直接返しているか？
+- [ ] 不要な名前変更（createBlog → create など）をしていないか？
+- [ ] エイリアスは本当に必要か？（段階的移行用以外は避ける）
+- [ ] 機能拡張が必要な場合はスプレッド演算子で既存機能を継承しているか？
+
+### 命名規則
+- **List系フック**: `use[Entity]sList` （例：`useBlogsList`）
+- **Detail系フック**: `use[Entity]Detail` （例：`useBlogDetail`）
+- **Mutation系フック**: `use[Entity]Mutations` （例：`useBlogMutations`）
+- **管理者用**: `useAdmin[Entity]...` プレフィックス
+
 ## 📝 更新履歴
+
+- **2025-09-21 v2.1**: 
+  - 全admin.tsファイルの冗長性を修正
+  - useMutations()の正しい実装パターンを文書化
+  - blogs/informations/schedules/videos/newsletters全て統一
+  - コード削減率69%達成（1690行→531行）
 
 - **2025-09-20 v2.0**: 
   - BaseUserHooks/BaseAdminHooks導入による大規模リファクタリング
   - 統一キャッシュシステム（MemoryCache）の完全統合
-  - コード削減率70%達成
   - 共通Author型の導入
   
 - **2025-09-20 v1.1**: 
@@ -381,4 +463,4 @@ console.log(`ヒット率: ${(info.stats.hitRate * 100).toFixed(1)}%`);
 - **2025-09-20 v1.0**: 
   - 初版作成
 
-最終更新: 2025-09-20
+最終更新: 2025-09-21

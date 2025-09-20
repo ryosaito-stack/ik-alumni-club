@@ -11,7 +11,7 @@ import { uploadImage, validateImageFile, createImagePreview, revokeImagePreview 
 export default function NewInformationPage() {
   const router = useRouter();
   const { member } = useAuth();
-  const { createInformation, loading, error } = useAdminInformationMutations();
+  const { create, loading, error } = useAdminInformationMutations();
 
   // 管理者チェック
   const isAdmin = member?.role === 'admin';
@@ -103,7 +103,7 @@ export default function NewInformationPage() {
       setUploadingImage(false);
     }
 
-    const id = await createInformation({
+    const id = await create({
       ...formData,
       imageUrl: uploadedImageUrl,
     });

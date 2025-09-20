@@ -3,14 +3,14 @@
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import DetailLayout from '@/components/DetailLayout';
-import { useBlog } from '@/hooks/useBlogs';
+import { useBlogDetail } from '@/hooks/blogs/user';
 
 export default function BlogDetailPage() {
   const params = useParams();
   const id = params?.id as string;
   
   // Firestoreから記事データを取得
-  const { blog, loading } = useBlog(id);
+  const { blog, loading } = useBlogDetail(id);
 
   if (loading) {
     return (

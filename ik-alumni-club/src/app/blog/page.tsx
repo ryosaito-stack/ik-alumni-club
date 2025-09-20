@@ -3,11 +3,11 @@
 import Link from 'next/link';
 import ViewAllLayout from '@/components/ViewAllLayout';
 import ListPageContent from '@/components/ListPageContent';
-import { usePublishedBlogs } from '@/hooks/useBlogs';
+import { useBlogsList } from '@/hooks/blogs/user';
 
 export default function BlogPage() {
   // Firestoreから公開済みブログ記事を取得
-  const { blogs, loading } = usePublishedBlogs({
+  const { blogs, loading } = useBlogsList({
     orderBy: 'createdAt',
     orderDirection: 'desc',
   });

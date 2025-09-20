@@ -41,14 +41,5 @@ export const useAdminScheduleDetail = (id: string | null) => {
  * 管理者用スケジュールCRUD操作フック
  */
 export const useAdminScheduleMutations = () => {
-  const { create, update, delete: deleteSchedule, loading, error, clearError } = schedulesAdminHooks.useMutations();
-  
-  return {
-    createSchedule: create,
-    updateSchedule: update,
-    deleteSchedule,
-    loading,
-    error,
-    clearError,
-  };
+  return schedulesAdminHooks.useMutations();
 };

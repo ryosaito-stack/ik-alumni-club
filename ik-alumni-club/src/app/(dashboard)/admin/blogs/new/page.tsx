@@ -4,14 +4,14 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
-import { useBlogMutations } from '@/hooks/useBlogs';
-import { BlogFormData } from '@/types';
+import { useBlogMutations } from '@/hooks/blogs/admin';
+import { BlogFormData } from '@/types/blog';
 import { uploadImage, validateImageFile, createImagePreview, revokeImagePreview } from '@/lib/storage';
 
 export default function NewBlogPage() {
   const router = useRouter();
   const { member } = useAuth();
-  const { createBlog, loading, error } = useBlogMutations();
+  const { create: createBlog, loading, error } = useBlogMutations();
 
   // 管理者チェック
   const isAdmin = member?.role === 'admin';

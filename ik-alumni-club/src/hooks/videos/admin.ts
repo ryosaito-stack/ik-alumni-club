@@ -36,16 +36,7 @@ export const useAdminVideoDetail = (id: string | null) => {
  * 管理者用動画CRUD操作フック
  */
 export const useAdminVideoMutations = () => {
-  const { create, update, delete: deleteVideo, loading, error, clearError } = videosAdminHooks.useMutations();
-  
-  return {
-    createVideo: create,
-    updateVideo: update,
-    deleteVideo,
-    loading,
-    error,
-    clearError,
-  };
+  return videosAdminHooks.useMutations();
 };
 
 /**
@@ -88,8 +79,3 @@ export const adminVideosCacheUtils = {
     videosAdminHooks.clearCache();
   },
 };
-
-// 互換性保持のためのエイリアス（既存コード対応）
-export const useVideos = useAdminVideosList;
-export const useVideo = (id: string) => useAdminVideoDetail(id);
-export const useVideoMutations = useAdminVideoMutations;

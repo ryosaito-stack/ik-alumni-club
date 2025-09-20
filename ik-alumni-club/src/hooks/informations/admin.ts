@@ -47,16 +47,7 @@ export const useAdminInformationDetail = (id: string) => {
  * 管理者用お知らせCRUD操作フック
  */
 export const useAdminInformationMutations = () => {
-  const { create, update, delete: deleteInformation, loading, error, clearError } = informationsAdminHooks.useMutations();
-  
-  return {
-    createInformation: create,
-    updateInformation: update,
-    deleteInformation,
-    loading,
-    error,
-    clearError,
-  };
+  return informationsAdminHooks.useMutations();
 };
 
 // キャッシュユーティリティ（デバッグ用）
