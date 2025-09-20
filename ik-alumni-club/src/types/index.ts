@@ -35,34 +35,6 @@ export interface Member {
   updatedAt: Date;
 }
 
-// ===== BLOG関連の型定義 =====
-// Blog型定義は独立ファイルに移動
-export * from './blog';
-
-// BlogCategory型も削除されたため、Contentインターフェースからも参照を削除
-// Content types (Legacy - 削除予定)
-export type ContentType = 'article' | 'video' | 'document';
-
-// Content information (Legacy - 削除予定)
-export interface Content {
-  id: string;
-  title: string;
-  description: string;
-  type: ContentType;
-  requiredPlan: MemberPlan;
-  createdAt: Date;
-  updatedAt: Date;
-  author: string;
-  tags: string[];
-  fileUrl?: string;
-  excerpt?: string;
-  readTime?: number;
-  isPremium?: boolean;
-  content?: string;
-  thumbnail?: string;
-  published?: boolean;
-}
-
 // Auth form data
 export interface AuthFormData {
   email: string;
