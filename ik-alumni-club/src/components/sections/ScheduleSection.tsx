@@ -1,10 +1,10 @@
 'use client';
 
 import Section from '@/components/Section';
-import { usePublishedSchedules } from '@/hooks/useSchedules';
+import { useSchedulesList } from '@/hooks/schedules/user';
 
 export default function ScheduleSection() {
-  const { schedules, loading } = usePublishedSchedules({
+  const { schedules, loading } = useSchedulesList({
     limit: 3,
     orderBy: 'date',
     orderDirection: 'asc',

@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import ViewAllLayout from '@/components/ViewAllLayout';
 import ListPageContent from '@/components/ListPageContent';
-import { getMonthSchedules } from '@/lib/firestore/schedules';
+import { getMonthSchedules } from '@/lib/firestore/schedules/user';
 import { Schedule } from '@/types';
 
 // 現在の月を取得

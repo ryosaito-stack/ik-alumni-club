@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import { useSchedules, useScheduleMutations } from '@/hooks/useSchedules';
+import { useAdminSchedulesList, useAdminScheduleMutations } from '@/hooks/schedules/admin';
 import { Schedule } from '@/types';
 
 export default function AdminSchedulesPage() {
@@ -17,13 +17,13 @@ export default function AdminSchedulesPage() {
   const isAdmin = member?.role === 'admin';
   
   // スケジュール一覧を取得
-  const { schedules, loading, error } = useSchedules({
+  const { schedules, loading, error } = useAdminSchedulesList({
     published: showUnpublished ? undefined : true,
     orderBy: 'date',
     orderDirection: 'asc',
   });
 
-  const { deleteSchedule: deleteScheduleHandler, loading: deleteLoading } = useScheduleMutations();
+  const { deleteSchedule: deleteScheduleHandler, loading: deleteLoading } = useAdminScheduleMutations();
 
   useEffect(() => {
     // 認証情報の読み込みが完了してから判定

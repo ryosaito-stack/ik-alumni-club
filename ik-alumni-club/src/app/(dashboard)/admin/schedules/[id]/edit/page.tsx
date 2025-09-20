@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
-import { useSchedule, useScheduleMutations } from '@/hooks/useSchedules';
+import { useAdminScheduleDetail, useAdminScheduleMutations } from '@/hooks/schedules/admin';
 import { ScheduleFormData } from '@/types';
 import { uploadImage, deleteImage, validateImageFile, createImagePreview, revokeImagePreview } from '@/lib/storage';
 
@@ -14,8 +14,8 @@ export default function EditSchedulePage() {
   const id = params?.id as string;
   
   const { member } = useAuth();
-  const { schedule, loading: loadingSchedule } = useSchedule(id);
-  const { updateSchedule, loading: updating, error } = useScheduleMutations();
+  const { schedule, loading: loadingSchedule } = useAdminScheduleDetail(id);
+  const { updateSchedule, loading: updating, error } = useAdminScheduleMutations();
 
   // 管理者チェック
   const isAdmin = member?.role === 'admin';

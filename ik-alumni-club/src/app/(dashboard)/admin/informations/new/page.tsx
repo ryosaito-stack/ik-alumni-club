@@ -4,14 +4,14 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
-import { useInformationMutations } from '@/hooks/informations/admin';
+import { useAdminInformationMutations } from '@/hooks/informations/admin';
 import { InformationFormData } from '@/types/information';
 import { uploadImage, validateImageFile, createImagePreview, revokeImagePreview } from '@/lib/storage';
 
 export default function NewInformationPage() {
   const router = useRouter();
   const { member } = useAuth();
-  const { createInformation, loading, error } = useInformationMutations();
+  const { createInformation, loading, error } = useAdminInformationMutations();
 
   // 管理者チェック
   const isAdmin = member?.role === 'admin';

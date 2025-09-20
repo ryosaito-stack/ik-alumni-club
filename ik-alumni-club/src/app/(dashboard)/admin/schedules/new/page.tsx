@@ -4,14 +4,14 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
-import { useScheduleMutations } from '@/hooks/useSchedules';
+import { useAdminScheduleMutations } from '@/hooks/schedules/admin';
 import { ScheduleFormData } from '@/types';
 import { uploadImage, validateImageFile, createImagePreview, revokeImagePreview } from '@/lib/storage';
 
 export default function NewSchedulePage() {
   const router = useRouter();
   const { member } = useAuth();
-  const { createSchedule, loading, error } = useScheduleMutations();
+  const { createSchedule, loading, error } = useAdminScheduleMutations();
 
   // 管理者チェック
   const isAdmin = member?.role === 'admin';
@@ -104,10 +104,21 @@ export default function NewSchedulePage() {
       setUploadingImage(false);
     }
 
+    if (!member) {
+      alert('認証情報が確認できません');
+      return;
+    }
+
+    const author = {
+      id: member.uid || '',
+      name: `${member.lastName} ${member.firstName}` || 'Unknown',
+      role: member.role || 'member',
+    };
+
     const id = await createSchedule({
       ...formData,
       imageUrl: uploadedImageUrl,
-    });
+    }, author);
     
     if (id) {
       alert('スケジュールを作成しました');

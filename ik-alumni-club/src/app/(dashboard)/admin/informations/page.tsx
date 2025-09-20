@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import { useInformations, useInformationMutations } from '@/hooks/informations/admin';
+import { useAdminInformationsList, useAdminInformationMutations } from '@/hooks/informations/admin';
 
 export default function AdminInformationsPage() {
   const router = useRouter();
@@ -15,13 +15,9 @@ export default function AdminInformationsPage() {
   const isAdmin = member?.role === 'admin';
   
   // お知らせ一覧を取得（管理画面なので全て取得）
-  const { informations, loading, error } = useInformations({
-    published: showUnpublished ? undefined : true,
-    orderBy: 'date',
-    orderDirection: 'desc',
-  });
+  const { informations, loading, error } = useAdminInformationsList(showUnpublished);
 
-  const { deleteInformation, loading: deleteLoading } = useInformationMutations();
+  const { deleteInformation, loading: deleteLoading } = useAdminInformationMutations();
 
   useEffect(() => {
     // 認証情報の読み込みが完了してから判定

@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { useSchedule } from '@/hooks/useSchedules';
+import { useScheduleDetail } from '@/hooks/schedules/user';
 import DetailLayout from '@/components/DetailLayout';
 
 export default function EventDetailPage() {
@@ -9,7 +9,7 @@ export default function EventDetailPage() {
   const id = params?.id as string;
   
   // Firestoreからスケジュールを取得
-  const { schedule, loading } = useSchedule(id);
+  const { schedule, loading } = useScheduleDetail(id);
 
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString('ja-JP', {
@@ -25,7 +25,6 @@ export default function EventDetailPage() {
       <DetailLayout
         title="読み込み中..."
         date=""
-        category=""
         showShareButtons={false}
         backLink="/events"
         backText="BACK"
@@ -42,7 +41,6 @@ export default function EventDetailPage() {
       <DetailLayout
         title="イベントが見つかりません"
         date=""
-        category=""
         showShareButtons={false}
         backLink="/events"
         backText="BACK"
@@ -58,7 +56,6 @@ export default function EventDetailPage() {
     <DetailLayout
       title={schedule.title}
       date={formatDate(schedule.date)}
-      category="EVENT"
       showShareButtons={true}
       backLink="/events"
       backText="BACK"

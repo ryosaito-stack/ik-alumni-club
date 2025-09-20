@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
-import { useInformation, useInformationMutations } from '@/hooks/informations/admin';
+import { useAdminInformationDetail, useAdminInformationMutations } from '@/hooks/informations/admin';
 import { InformationFormData } from '@/types/information';
 import { uploadImage, deleteImage, validateImageFile, createImagePreview, revokeImagePreview } from '@/lib/storage';
 
@@ -14,8 +14,8 @@ export default function EditInformationPage() {
   const id = params?.id as string;
   
   const { member } = useAuth();
-  const { information, loading: loadingInfo } = useInformation(id);
-  const { updateInformation, loading: updating, error } = useInformationMutations();
+  const { information, loading: loadingInfo } = useAdminInformationDetail(id);
+  const { updateInformation, loading: updating, error } = useAdminInformationMutations();
 
   // 管理者チェック
   const isAdmin = member?.role === 'admin';

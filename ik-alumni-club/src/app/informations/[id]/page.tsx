@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { useInformation } from '@/hooks/informations/user';
+import { useInformationDetail } from '@/hooks/informations/user';
 import DetailLayout from '@/components/DetailLayout';
 
 export default function NewsDetailPage() {
@@ -9,7 +9,7 @@ export default function NewsDetailPage() {
   const id = params?.id as string;
   
   // Firestoreからお知らせを取得
-  const { information, loading } = useInformation(id);
+  const { information, loading } = useInformationDetail(id);
 
   const formatDate = (date: Date | string) => {
     if (typeof date === 'string') return date;
