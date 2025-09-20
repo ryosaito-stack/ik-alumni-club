@@ -6,6 +6,8 @@ import {
     query,
     db,
     getDocs,
+    doc,
+    getDoc,
     QueryConstraint,
     type Information,
     type InformationQueryOptions
@@ -44,3 +46,21 @@ import { convertToInformation } from '@/lib/firestore/informations/converter'
       throw error;
     }
   };
+
+// お知らせを1件取得（公開チェックなし）
+export const getInformationById = async (id: string): Promise<Information | null> => {
+  try {
+    const docRef = doc(db, COLLECTION_NAME, id);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      return convertToInformation(docSnap.id, docSnap.data());
+    } else {
+      console.log('No such information!');
+      return null;
+    }
+  } catch (error) {
+    console.error('Error getting information:', error);
+    throw error;
+  }
+};
