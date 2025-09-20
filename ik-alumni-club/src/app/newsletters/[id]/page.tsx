@@ -3,14 +3,14 @@
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import DetailLayout from '@/components/DetailLayout';
-import { useNewsletter } from '@/hooks/useNewsletters';
+import { useNewsletterDetail } from '@/hooks/newsletters/user';
 
 export default function NewsletterDetailPage() {
   const params = useParams();
   const id = params?.id as string;
   
   // Firestoreからニュースレターデータを取得
-  const { newsletter, loading } = useNewsletter(id);
+  const { newsletter, loading } = useNewsletterDetail(id);
 
   if (loading) {
     return (

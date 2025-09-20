@@ -124,24 +124,4 @@ export interface PlanInfo {
 }
 
 // ===== NEWSLETTER関連の型定義 =====
-
-// Newsletter data
-export interface Newsletter {
-  id: string;
-  title: string;              // タイトル
-  issueNumber: number;        // 第○号
-  content: string;            // HTML形式のコンテンツ
-  excerpt: string;            // 概要（一覧表示用）
-  pdfUrl?: string;            // PDF版URL（オプション）
-  published: boolean;         // 公開/非公開
-  createdAt: Date;           // 作成日時
-  updatedAt: Date;           // 更新日時
-}
-
-// Query options for fetching Newsletter
-export interface NewsletterQueryOptions {
-  published?: boolean;
-  limit?: number;
-  orderBy?: 'issueNumber' | 'createdAt' | 'updatedAt';
-  orderDirection?: 'asc' | 'desc';
-}
+export type { Newsletter, NewsletterFormData, NewsletterQueryOptions } from './newsletter';

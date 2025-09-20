@@ -3,12 +3,12 @@
 import Link from 'next/link';
 import { useScrollAnimation } from '@/hooks/useScrollAnimation';
 import { useBlogArticles } from '@/hooks/useBlogs';
-import { useNewsletters } from '@/hooks/useNewsletters';
+import { useNewslettersList } from '@/hooks/newsletters/user';
 
 export default function BlogSection() {
   const { ref: blogRef, isVisible: blogVisible } = useScrollAnimation({ threshold: 0.1 });
   const { articles, loading } = useBlogArticles(3); // 最新3件を取得
-  const { newsletters, loading: newslettersLoading } = useNewsletters(3); // 最新3件の会報を取得
+  const { newsletters, loading: newslettersLoading } = useNewslettersList({ limit: 3 }); // 最新3件の会報を取得
 
   return (
     <section ref={blogRef} style={{ marginBottom: '150px' }}>

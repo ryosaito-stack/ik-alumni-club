@@ -3,11 +3,11 @@
 import Link from 'next/link';
 import ViewAllLayout from '@/components/ViewAllLayout';
 import ListPageContent from '@/components/ListPageContent';
-import { useNewsletters } from '@/hooks/useNewsletters';
+import { useNewslettersList } from '@/hooks/newsletters/user';
 
 export default function NewslettersPage() {
   // Firestoreから公開済みニュースレターを取得
-  const { newsletters, loading } = useNewsletters();
+  const { newsletters, loading } = useNewslettersList({});
 
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString('ja-JP', {

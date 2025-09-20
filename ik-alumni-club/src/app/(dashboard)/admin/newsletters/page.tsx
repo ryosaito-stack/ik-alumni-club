@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import { useNewslettersAdmin, useNewsletterMutations } from '@/hooks/useNewsletters';
+import { useAdminNewslettersList, useAdminNewsletterMutations } from '@/hooks/newsletters/admin';
 
 export default function AdminNewslettersPage() {
   const router = useRouter();
@@ -15,14 +15,14 @@ export default function AdminNewslettersPage() {
   const isAdmin = member?.role === 'admin';
 
   // ニュースレター一覧を取得
-  const { newsletters, loading } = useNewslettersAdmin({
+  const { newsletters, loading } = useAdminNewslettersList({
     published: showUnpublished ? undefined : true,
     orderBy: 'issueNumber',
     orderDirection: 'desc',
   });
 
   // 削除用のMutation
-  const { deleteNewsletter, loading: deleting } = useNewsletterMutations();
+  const { deleteNewsletter, loading: deleting } = useAdminNewsletterMutations();
 
   useEffect(() => {
     if (member && !isAdmin) {

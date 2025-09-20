@@ -4,13 +4,13 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
-import { useNewsletterMutations } from '@/hooks/useNewsletters';
+import { useAdminNewsletterMutations } from '@/hooks/newsletters/admin';
 import { uploadImage, validateImageFile } from '@/lib/storage';
 
 export default function NewNewsletterPage() {
   const router = useRouter();
   const { member } = useAuth();
-  const { createNewsletter, loading, error } = useNewsletterMutations();
+  const { createNewsletter, loading, error } = useAdminNewsletterMutations();
 
   // 管理者チェック
   const isAdmin = member?.role === 'admin';

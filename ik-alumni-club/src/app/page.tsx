@@ -9,11 +9,11 @@ import ScheduleSection from '@/components/sections/ScheduleSection';
 import VideoSection from '@/components/sections/VideoSection';
 import ContentGridSection from '@/components/sections/ContentGridSection';
 import { useLatestBlogs } from '@/hooks/useBlogs';
-import { useNewsletters } from '@/hooks/useNewsletters';
+import { useNewslettersList } from '@/hooks/newsletters/user';
 
 export default function LandingPage() {
   const { blogs: blogArticles, loading: blogLoading } = useLatestBlogs(3);
-  const { newsletters, loading: newslettersLoading } = useNewsletters(3);
+  const { newsletters, loading: newslettersLoading } = useNewslettersList({ limit: 3 });
 
   return (
     <div className="min-h-screen bg-white">
